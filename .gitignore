@@ -1,0 +1,7 @@
+# Ignore everything by default
+*
+
+# Whitelist files to publish
+!.gitignore
+!index.html
+!CLAUDE.md
