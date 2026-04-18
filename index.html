@@ -346,7 +346,6 @@ tr:last-child td { border-bottom: none; }
         <li>ref as a prop &mdash; no more forwardRef</li>
         <li>Ref cleanup functions</li>
         <li>Context as provider</li>
-        <li>Document metadata</li>
         <li>Resource loading APIs</li>
       </ul>
     </div>
@@ -399,29 +398,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 6: COMPILER — BEFORE CODE ==================== -->
-<section class="slide code-slide" data-presenter="p1">
-  <span class="badge p1">Compiler</span>
-  <h2 style="margin-bottom:8px;">React 18: Manual Memoization</h2>
-  <p class="text-secondary mb-16" style="font-size:1.15rem;">Every optimization is your responsibility</p>
-  <pre class="code-block"><code><span class="kw">const</span> <span class="fn">ExpensiveList</span> = <span class="fn">React.memo</span>(({ <span class="param">items</span>, <span class="param">filter</span> }) =&gt; {
-  <span class="kw">const</span> <span class="param">filtered</span> = <span class="fn">useMemo</span>(
-    () =&gt; <span class="param">items</span>.<span class="fn">filter</span>(<span class="param">i</span> =&gt; <span class="param">i</span>.name.<span class="fn">includes</span>(<span class="param">filter</span>)),
-    [<span class="param">items</span>, <span class="param">filter</span>]
-  );
-
-  <span class="kw">const</span> <span class="param">handleClick</span> = <span class="fn">useCallback</span>(
-    (<span class="param">id</span>) =&gt; { console.<span class="fn">log</span>(<span class="str">'clicked'</span>, <span class="param">id</span>); },
-    []
-  );
-
-  <span class="kw">return</span> <span class="param">filtered</span>.<span class="fn">map</span>(<span class="param">item</span> =&gt; (
-    <span class="tag">&lt;Item</span> <span class="attr">key</span>={<span class="param">item</span>.id} <span class="attr">onClick</span>={<span class="param">handleClick</span>} {...<span class="param">item</span>} <span class="tag">/&gt;</span>
-  ));
-});</code></pre>
-</section>
-
-<!-- ==================== SLIDE 7: COMPILER — THE SOLUTION ==================== -->
+<!-- ==================== SLIDE 6: COMPILER — THE SOLUTION ==================== -->
 <section class="slide" data-presenter="p1">
   <span class="badge p1">Compiler</span>
   <h1>React Compiler</h1>
@@ -445,12 +422,30 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 8: COMPILER — AFTER CODE ==================== -->
+<!-- ==================== SLIDE 7: COMPILER — CODE COMPARISON ==================== -->
 <section class="slide code-slide" data-presenter="p1">
   <span class="badge p1">Compiler</span>
-  <h2 style="margin-bottom:8px;">React 19: The Compiler Handles It</h2>
-  <p class="text-secondary mb-16" style="font-size:1.15rem;">Same logic, zero manual optimization</p>
-  <pre class="code-block"><code><span class="kw">function</span> <span class="fn">ExpensiveList</span>({ <span class="param">items</span>, <span class="param">filter</span> }) {
+  <h2 style="margin-bottom:12px;">Before &amp; After the Compiler</h2>
+  <div class="code-compare">
+    <div>
+      <div class="code-label before">React 18 &mdash; Manual Memoization</div>
+      <pre class="code-block before"><code><span class="kw">const</span> <span class="fn">ExpensiveList</span> = <span class="fn">React.memo</span>(({ <span class="param">items</span>, <span class="param">filter</span> }) =&gt; {
+  <span class="kw">const</span> <span class="param">filtered</span> = <span class="fn">useMemo</span>(
+    () =&gt; <span class="param">items</span>.<span class="fn">filter</span>(<span class="param">i</span> =&gt; <span class="param">i</span>.name.<span class="fn">includes</span>(<span class="param">filter</span>)),
+    [<span class="param">items</span>, <span class="param">filter</span>]
+  );
+  <span class="kw">const</span> <span class="param">handleClick</span> = <span class="fn">useCallback</span>(
+    (<span class="param">id</span>) =&gt; { console.<span class="fn">log</span>(<span class="str">'clicked'</span>, <span class="param">id</span>); },
+    []
+  );
+  <span class="kw">return</span> <span class="param">filtered</span>.<span class="fn">map</span>(<span class="param">item</span> =&gt; (
+    <span class="tag">&lt;Item</span> <span class="attr">key</span>={<span class="param">item</span>.id} <span class="attr">onClick</span>={<span class="param">handleClick</span>} {...<span class="param">item</span>} <span class="tag">/&gt;</span>
+  ));
+});</code></pre>
+    </div>
+    <div>
+      <div class="code-label after">React 19 &mdash; The Compiler Handles It</div>
+      <pre class="code-block after"><code><span class="kw">function</span> <span class="fn">ExpensiveList</span>({ <span class="param">items</span>, <span class="param">filter</span> }) {
   <span class="kw">const</span> <span class="param">filtered</span> = <span class="param">items</span>.<span class="fn">filter</span>(<span class="param">i</span> =&gt; <span class="param">i</span>.name.<span class="fn">includes</span>(<span class="param">filter</span>));
 
   <span class="kw">const</span> <span class="param">handleClick</span> = (<span class="param">id</span>) =&gt; {
@@ -461,15 +456,17 @@ tr:last-child td { border-bottom: none; }
     <span class="tag">&lt;Item</span> <span class="attr">key</span>={<span class="param">item</span>.id} <span class="attr">onClick</span>={<span class="param">handleClick</span>} {...<span class="param">item</span>} <span class="tag">/&gt;</span>
   ));
 }</code></pre>
-  <div style="margin-top:24px; display:flex; gap:16px; font-size:1.15rem;">
-    <div class="text-green">&#10003; No <code class="inline-code">React.memo</code></div>
-    <div class="text-green">&#10003; No <code class="inline-code">useMemo</code></div>
-    <div class="text-green">&#10003; No <code class="inline-code">useCallback</code></div>
-    <div class="text-green">&#10003; Same performance</div>
+      <div style="margin-top:12px; display:flex; gap:16px; font-size:1rem; flex-wrap:wrap;">
+        <div class="text-green">&#10003; No <code class="inline-code">React.memo</code></div>
+        <div class="text-green">&#10003; No <code class="inline-code">useMemo</code></div>
+        <div class="text-green">&#10003; No <code class="inline-code">useCallback</code></div>
+        <div class="text-green">&#10003; Same performance</div>
+      </div>
+    </div>
   </div>
 </section>
 
-<!-- ==================== SLIDE 9: COMPILER — PRACTICAL GUIDANCE ==================== -->
+<!-- ==================== SLIDE 8: COMPILER — PRACTICAL GUIDANCE ==================== -->
 <section class="slide" data-presenter="p1">
   <span class="badge p1">Compiler</span>
   <h2>React Compiler &mdash; What Changes in Your Code?</h2>
@@ -511,15 +508,52 @@ tr:last-child td { border-bottom: none; }
 </section>
 
 
-<!-- ==================== SLIDE 11: DIVIDER — DX IMPROVEMENTS ==================== -->
+<!-- ==================== SLIDE 9: COMPILER — INSTALLATION ==================== -->
+<section class="slide code-slide" data-presenter="p1">
+  <span class="badge p1">Compiler</span>
+  <h2 style="margin-bottom:16px;">Installing the React Compiler in Next.js</h2>
+  <div class="two-col" style="gap:32px; margin-top:4px;">
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <p class="text-secondary" style="font-size:1rem; margin-bottom:2px;">1. Install the compiler package</p>
+      <pre class="code-block" style="font-size:0.95rem;"><code><span class="fn">npm</span> install <span class="str">babel-plugin-react-compiler</span></code></pre>
+      <p class="text-secondary" style="font-size:1rem;">2. Enable it in <code class="inline-code">next.config.js</code></p>
+      <pre class="code-block" style="font-size:0.95rem;"><code><span class="cm">// next.config.js</span>
+<span class="kw">const</span> <span class="param">nextConfig</span> = {
+  experimental: { reactCompiler: <span class="kw">true</span> },
+};
+<span class="kw">export default</span> <span class="param">nextConfig</span>;</code></pre>
+      <div class="card" style="border-left:3px solid var(--accent-green); padding:10px 14px;">
+        <span style="color:var(--accent-green); font-weight:600;">That's it</span>
+        <span class="text-secondary" style="font-size:0.95rem;"> &mdash; Next.js picks up the compiler automatically, no extra Babel config needed.</span>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <p class="text-secondary" style="font-size:1rem; margin-bottom:2px;">3. ESLint plugin</p>
+      <pre class="code-block" style="font-size:0.95rem;"><code><span class="fn">npm</span> install <span class="str">eslint-plugin-react-compiler</span></code></pre>
+      <pre class="code-block" style="font-size:0.95rem;"><code><span class="cm">// .eslintrc.json</span>
+{
+  <span class="str">"plugins"</span>: [<span class="str">"react-compiler"</span>],
+  <span class="str">"rules"</span>: {
+    <span class="str">"react-compiler/react-compiler"</span>: <span class="str">"error"</span>
+  }
+}</code></pre>
+      <div class="card" style="border-left:3px solid var(--accent-react); padding:10px 14px;">
+        <span style="color:var(--accent-react); font-weight:600;">✨ Memo badge in React DevTools</span>
+        <p class="text-secondary" style="font-size:0.95rem; margin-top:4px;">Optimized components show a <strong style="color:var(--accent-react);">✨ Memo</strong> badge. ESLint error = compiler skipped it &mdash; code still works, just unoptimized. No crash.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 10: DIVIDER — DX IMPROVEMENTS ==================== -->
 <section class="slide divider-slide" data-presenter="p1">
   <div style="font-size:1rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--accent-react); margin-bottom:16px;">Section</div>
   <div class="section-title">DX Improvements</div>
   <div class="divider-accent"></div>
-  <div class="section-subtitle">Refs, Context, Metadata, and Resource Loading</div>
+  <div class="section-subtitle">Refs, Context, and Resource Loading</div>
 </section>
 
-<!-- ==================== SLIDE 12: REF AS PROP — EXPLANATION ==================== -->
+<!-- ==================== SLIDE 11: REF AS PROP — EXPLANATION ==================== -->
 <section class="slide" data-presenter="p1">
   <span class="badge p1">Compiler</span>
   <h1>ref as a Prop</h1>
@@ -541,7 +575,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 13: REF AS PROP — CODE COMPARISON ==================== -->
+<!-- ==================== SLIDE 12: REF AS PROP — CODE COMPARISON ==================== -->
 <section class="slide code-slide" data-presenter="p1">
   <span class="badge p1">Compiler</span>
   <h2 style="margin-bottom:16px;">ref as a Prop &mdash; Before &amp; After</h2>
@@ -576,40 +610,53 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 14: REF CLEANUP FUNCTIONS ==================== -->
-<section class="slide" data-presenter="p1">
-  <span class="badge p1">Compiler</span>
-  <h2>Ref Cleanup Functions</h2>
-  <ul style="font-size:1.25rem; margin-bottom:20px;">
-    <li>Ref callbacks can now return a cleanup function &mdash; like <code class="inline-code">useEffect</code></li>
-    <li>Perfect for cleaning up observers, event listeners, or third-party integrations</li>
-    <li>TypeScript tip: use block statements to avoid implicit return issues</li>
-  </ul>
-  <pre class="code-block"><code><span class="tag">&lt;div</span> <span class="attr">ref</span>={(<span class="param">node</span>) =&gt; {
-  <span class="cm">// setup</span>
-  <span class="kw">const</span> <span class="param">observer</span> = <span class="kw">new</span> <span class="fn">IntersectionObserver</span>(<span class="param">callback</span>);
-  <span class="param">observer</span>.<span class="fn">observe</span>(<span class="param">node</span>);
+<!-- ==================== SLIDE 13: REF CLEANUP FUNCTIONS ==================== -->
+<section class="slide code-slide" data-presenter="p1">
+  <span class="badge p1">DX</span>
+  <h2 style="margin-bottom:12px;">Ref Cleanup Functions</h2>
+  <div class="code-compare">
+    <div>
+      <div class="code-label before">React 18 &mdash; useEffect workaround</div>
+      <pre class="code-block before"><code><span class="kw">function</span> <span class="fn">MyComponent</span>() {
+  <span class="kw">const</span> [<span class="param">visible</span>, <span class="fn">setVisible</span>] = <span class="fn">useState</span>(<span class="kw">false</span>);
+  <span class="kw">const</span> <span class="param">ref</span> = <span class="fn">useRef</span>(<span class="kw">null</span>);
 
-  <span class="cm">// cleanup (new in React 19)</span>
-  <span class="kw">return</span> () =&gt; <span class="param">observer</span>.<span class="fn">disconnect</span>();
-}} <span class="tag">/&gt;</span></code></pre>
-  <div style="margin-top:20px; display:flex; gap:20px; flex-wrap:wrap;">
-    <div class="card" style="flex:1; min-width:220px; border-left:3px solid var(--accent-orange);">
-      <h3 style="color:var(--accent-orange);">Why It Matters</h3>
-      <p style="font-size:1.1rem;">In React 18, ref callbacks had no cleanup. You needed a separate <code class="inline-code">useEffect</code> to disconnect observers &mdash; and if the element remounted, the old one leaked.</p>
+  <span class="fn">useEffect</span>(() =&gt; {
+    <span class="kw">const</span> <span class="param">observer</span> = <span class="kw">new</span> <span class="fn">IntersectionObserver</span>(
+      ([<span class="param">entry</span>]) =&gt; <span class="fn">setVisible</span>(<span class="param">entry</span>.isIntersecting)
+    );
+    <span class="param">observer</span>.<span class="fn">observe</span>(<span class="param">ref</span>.current);
+    <span class="kw">return</span> () =&gt; <span class="param">observer</span>.<span class="fn">disconnect</span>();
+  }, []);
+
+  <span class="kw">return</span> <span class="tag">&lt;div</span> <span class="attr">ref</span>={<span class="param">ref</span>} <span class="tag">/&gt;</span>;
+}</code></pre>
     </div>
-    <div class="card" style="flex:1; min-width:220px; border-left:3px solid var(--accent-green);">
-      <h3 style="color:var(--accent-green);">When to Use</h3>
-      <ul style="font-size:1.05rem; margin:0;">
-        <li>IntersectionObserver / ResizeObserver on elements</li>
-        <li>Third-party DOM libraries (charts, maps, editors)</li>
-        <li>Manual event listeners on specific nodes</li>
-      </ul>
+    <div>
+      <div class="code-label after">React 19 &mdash; ref callback with cleanup</div>
+      <pre class="code-block after"><code><span class="kw">function</span> <span class="fn">MyComponent</span>() {
+  <span class="kw">const</span> [<span class="param">visible</span>, <span class="fn">setVisible</span>] = <span class="fn">useState</span>(<span class="kw">false</span>);
+
+  <span class="kw">function</span> <span class="fn">trackVisibility</span>(<span class="param">node</span>) {
+    <span class="kw">const</span> <span class="param">observer</span> = <span class="kw">new</span> <span class="fn">IntersectionObserver</span>(
+      ([<span class="param">entry</span>]) =&gt; <span class="fn">setVisible</span>(<span class="param">entry</span>.isIntersecting)
+    );
+    <span class="param">observer</span>.<span class="fn">observe</span>(<span class="param">node</span>);
+    <span class="kw">return</span> () =&gt; <span class="param">observer</span>.<span class="fn">disconnect</span>();
+  }
+
+  <span class="kw">return</span> <span class="tag">&lt;div</span> <span class="attr">ref</span>={<span class="fn">trackVisibility</span>} <span class="tag">/&gt;</span>;
+}</code></pre>
+      <div style="margin-top:12px; display:flex; gap:16px; font-size:1rem; flex-wrap:wrap;">
+        <div class="text-green">&#10003; No separate useEffect</div>
+        <div class="text-green">&#10003; Cleanup runs on unmount</div>
+        <div class="text-green">&#10003; Reusable callback</div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ==================== SLIDE 15: CONTEXT AS PROVIDER ==================== -->
+<!-- ==================== SLIDE 14: CONTEXT AS PROVIDER ==================== -->
 <section class="slide" data-presenter="p1">
   <span class="badge p1">Compiler</span>
   <h2>Context as Provider</h2>
@@ -647,89 +694,54 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 16: DOCUMENT METADATA — EXPLANATION ==================== -->
-<section class="slide" data-presenter="p1">
-  <span class="badge p1">Compiler</span>
-  <h1>Document Metadata</h1>
-  <ul style="font-size:1.35rem; margin-top:16px;">
-    <li>Render <code class="inline-code">&lt;title&gt;</code>, <code class="inline-code">&lt;meta&gt;</code>, and <code class="inline-code">&lt;link&gt;</code> tags anywhere in your component tree</li>
-    <li>React 19 automatically hoists them to the document <code class="inline-code">&lt;head&gt;</code></li>
-    <li>Works in client-only apps, streaming SSR, and Server Components</li>
-  </ul>
-  <div style="margin-top:32px; display:flex; gap:24px;">
-    <div class="card" style="flex:1; text-align:center;">
-      <div class="strikethrough" style="font-size:1.3rem; opacity:0.8;">react-helmet</div>
-      <div class="text-secondary mt-8" style="font-size:1rem;">No longer needed</div>
-    </div>
-    <div class="card" style="flex:1; text-align:center;">
-      <div class="strikethrough" style="font-size:1.3rem; opacity:0.8;">next/head</div>
-      <div class="text-secondary mt-8" style="font-size:1rem;">Built into React now</div>
-    </div>
-    <div class="card" style="flex:1; text-align:center; border-color:rgba(97,218,251,0.3);">
-      <div class="text-react" style="font-size:1.3rem;">Native JSX</div>
-      <div class="text-secondary mt-8" style="font-size:1rem;">Just render the tags</div>
-    </div>
-  </div>
-</section>
-
-<!-- ==================== SLIDE 17: DOCUMENT METADATA — CODE ==================== -->
+<!-- ==================== SLIDE 15: RESOURCE LOADING APIS ==================== -->
 <section class="slide code-slide" data-presenter="p1">
-  <span class="badge p1">Compiler</span>
-  <h2 style="margin-bottom:16px;">Document Metadata &mdash; In Practice</h2>
-  <pre class="code-block"><code><span class="kw">function</span> <span class="fn">BlogPost</span>({ <span class="param">post</span> }) {
-  <span class="kw">return</span> (
-    <span class="tag">&lt;article&gt;</span>
-      <span class="tag">&lt;h1&gt;</span>{<span class="param">post</span>.title}<span class="tag">&lt;/h1&gt;</span>
+  <span class="badge p1">DX</span>
+  <h2 style="margin-bottom:12px;">Resource Loading APIs</h2>
+  <div class="code-compare">
+    <div>
+      <div class="code-label before">React 18 &mdash; manual DOM or next/head</div>
+      <pre class="code-block before"><code><span class="cm">// next/head or public/index.html</span>
+<span class="tag">&lt;Head&gt;</span>
+  <span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="str">"preload"</span> <span class="attr">href</span>=<span class="str">"/font.woff"</span>
+    <span class="attr">as</span>=<span class="str">"font"</span> <span class="attr">crossOrigin</span>=<span class="str">"anonymous"</span> <span class="tag">/&gt;</span>
+  <span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="str">"preconnect"</span>
+    <span class="attr">href</span>=<span class="str">"https://api.example.com"</span> <span class="tag">/&gt;</span>
+  <span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="str">"dns-prefetch"</span>
+    <span class="attr">href</span>=<span class="str">"https://cdn.example.com"</span> <span class="tag">/&gt;</span>
+  <span class="tag">&lt;script</span> <span class="attr">src</span>=<span class="str">"/script.js"</span> <span class="attr">defer</span> <span class="tag">/&gt;</span>
+<span class="tag">&lt;/Head&gt;</span>
 
-      <span class="cm">{/* These are hoisted to &lt;head&gt; automatically */}</span>
-      <span class="tag">&lt;title&gt;</span>{<span class="param">post</span>.title}<span class="tag">&lt;/title&gt;</span>
-      <span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="str">"author"</span> <span class="attr">content</span>=<span class="str">"Josh"</span> <span class="tag">/&gt;</span>
-      <span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="str">"author"</span> <span class="attr">href</span>=<span class="str">"https://twitter.com/joshcstory/"</span> <span class="tag">/&gt;</span>
-      <span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="str">"keywords"</span> <span class="attr">content</span>={<span class="param">post</span>.keywords} <span class="tag">/&gt;</span>
-
-      <span class="tag">&lt;p&gt;</span>{<span class="param">post</span>.content}<span class="tag">&lt;/p&gt;</span>
-    <span class="tag">&lt;/article&gt;</span>
-  );
-}</code></pre>
-</section>
-
-<!-- ==================== SLIDE 18: RESOURCE LOADING APIS ==================== -->
-<section class="slide" data-presenter="p1">
-  <span class="badge p1">Compiler</span>
-  <h2>Resource Loading APIs</h2>
-  <p class="text-secondary mb-16" style="font-size:1.15rem;">New <code class="inline-code">react-dom</code> APIs for preloading resources &mdash; prevents layout shifts, improves load time</p>
-  <pre class="code-block"><code><span class="kw">import</span> { <span class="fn">prefetchDNS</span>, <span class="fn">preconnect</span>, <span class="fn">preload</span>, <span class="fn">preinit</span> } <span class="kw">from</span> <span class="str">'react-dom'</span>;
+<span class="cm">// scattered across layouts, pages, _document.tsx</span>
+<span class="cm">// easy to forget, easy to duplicate</span></code></pre>
+    </div>
+    <div>
+      <div class="code-label after">React 19 &mdash; call it where you need it</div>
+      <pre class="code-block after"><code><span class="kw">import</span> { <span class="fn">prefetchDNS</span>, <span class="fn">preconnect</span>,
+         <span class="fn">preload</span>, <span class="fn">preinit</span> } <span class="kw">from</span> <span class="str">'react-dom'</span>;
 
 <span class="kw">function</span> <span class="fn">MyComponent</span>() {
-  <span class="fn">preinit</span>(<span class="str">'https://.../script.js'</span>, { <span class="attr">as</span>: <span class="str">'script'</span> });
-  <span class="fn">preload</span>(<span class="str">'https://.../font.woff'</span>, { <span class="attr">as</span>: <span class="str">'font'</span> });
-  <span class="fn">preload</span>(<span class="str">'https://.../style.css'</span>, { <span class="attr">as</span>: <span class="str">'style'</span> });
-  <span class="fn">prefetchDNS</span>(<span class="str">'https://cdn.example.com'</span>);
+  <span class="fn">preload</span>(<span class="str">'/font.woff'</span>, { <span class="attr">as</span>: <span class="str">'font'</span> });
   <span class="fn">preconnect</span>(<span class="str">'https://api.example.com'</span>);
+  <span class="fn">prefetchDNS</span>(<span class="str">'https://cdn.example.com'</span>);
+  <span class="fn">preinit</span>(<span class="str">'/script.js'</span>, { <span class="attr">as</span>: <span class="str">'script'</span> });
 }</code></pre>
-  <div style="margin-top:20px; display:flex; gap:16px; font-size:1.05rem; flex-wrap:wrap;">
-    <div class="card" style="flex:1; min-width:200px; padding:12px 16px;">
-      <span class="text-react">Fonts</span> <span class="text-secondary">&mdash; <code class="inline-code">preload</code> custom fonts to eliminate FOUT and layout shifts</span>
-    </div>
-    <div class="card" style="flex:1; min-width:200px; padding:12px 16px;">
-      <span class="text-react">Scripts</span> <span class="text-secondary">&mdash; <code class="inline-code">preinit</code> third-party scripts (analytics, widgets) early</span>
-    </div>
-    <div class="card" style="flex:1; min-width:200px; padding:12px 16px;">
-      <span class="text-react">Navigation</span> <span class="text-secondary">&mdash; <code class="inline-code">preload</code> next-route assets on hover for instant transitions</span>
-    </div>
-    <div class="card" style="flex:1; min-width:200px; padding:12px 16px;">
-      <span class="text-react">APIs</span> <span class="text-secondary">&mdash; <code class="inline-code">preconnect</code> to API domains to cut round-trip latency</span>
+      <div style="margin-top:12px; display:flex; gap:12px; font-size:0.95rem; flex-wrap:wrap;">
+        <div class="text-green">&#10003; Colocated with the component that needs it</div>
+        <div class="text-green">&#10003; React deduplicates automatically</div>
+        <div class="text-green">&#10003; Works in Server Components too</div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ==================== SLIDE 19: P1 RECAP & HANDOFF ==================== -->
+<!-- ==================== SLIDE 16: P1 RECAP & HANDOFF ==================== -->
 <section class="slide" data-presenter="p1" style="align-items:center;">
   <span class="badge p1">Compiler</span>
   <h2>Recap: The New Developer Experience</h2>
   <ul style="font-size:1.4rem; margin-top:16px; max-width:80%;">
     <li>The <strong>Compiler</strong> handles performance &mdash; stop memoizing manually</li>
-    <li><strong>Refs, Context, and Metadata</strong> are all simpler &mdash; less boilerplate</li>
+    <li><strong>Refs and Context</strong> are all simpler &mdash; less boilerplate</li>
     <li>You can <strong>delete code</strong> from your codebase today</li>
   </ul>
   <div style="margin-top:48px; padding:24px 32px; background:rgba(199,146,234,0.08); border-left:4px solid var(--accent-purple); border-radius:0 12px 12px 0; font-size:1.3rem; max-width:80%;">
@@ -737,7 +749,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 20: DIVIDER — P2 ==================== -->
+<!-- ==================== SLIDE 17: DIVIDER — P2 ==================== -->
 <section class="slide divider-slide" data-presenter="p2">
   <div style="font-size:1rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--accent-purple); margin-bottom:16px;">Part 2</div>
   <div class="section-title">The New Data Story</div>
@@ -745,7 +757,7 @@ tr:last-child td { border-bottom: none; }
   <div class="section-subtitle">Forms, async patterns, the use hook, and server integration</div>
 </section>
 
-<!-- ==================== SLIDE 21: ACTIVITY — EXPLANATION ==================== -->
+<!-- ==================== SLIDE 18: ACTIVITY — EXPLANATION ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h1>&lt;Activity&gt;</h1>
@@ -782,7 +794,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 22: ACTIVITY — BEFORE & AFTER CODE ==================== -->
+<!-- ==================== SLIDE 19: ACTIVITY — BEFORE & AFTER CODE ==================== -->
 <section class="slide code-slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h2 style="margin-bottom:8px;">&lt;Activity&gt; &mdash; Before &amp; After</h2>
@@ -837,7 +849,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 23: ACTIVITY — PRE-RENDERING WITH SUSPENSE ==================== -->
+<!-- ==================== SLIDE 20: ACTIVITY — PRE-RENDERING WITH SUSPENSE ==================== -->
 <section class="slide code-slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h2 style="margin-bottom:4px;">&lt;Activity&gt; + Suspense &mdash; Pre-rendering</h2>
@@ -869,7 +881,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 24: ACTIONS — THE OLD PATTERN ==================== -->
+<!-- ==================== SLIDE 21: ACTIONS — THE OLD PATTERN ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h1>Actions</h1>
@@ -886,7 +898,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 25: ACTIONS — OLD FORM CODE ==================== -->
+<!-- ==================== SLIDE 22: ACTIONS — OLD FORM CODE ==================== -->
 <section class="slide code-slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h2 style="margin-bottom:12px;">React 18: A Simple Form</h2>
@@ -914,7 +926,7 @@ tr:last-child td { border-bottom: none; }
   <div class="text-orange mt-16" style="font-size:1.1rem;">3 useState calls + manual async handling for one form</div>
 </section>
 
-<!-- ==================== SLIDE 26: ACTIONS — THE NEW PATTERN ==================== -->
+<!-- ==================== SLIDE 23: ACTIONS — THE NEW PATTERN ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h1>Actions</h1>
@@ -934,7 +946,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 27: ACTIONS — NEW FORM CODE ==================== -->
+<!-- ==================== SLIDE 24: ACTIONS — NEW FORM CODE ==================== -->
 <section class="slide code-slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h2 style="margin-bottom:16px;">React 19: Form Actions</h2>
@@ -957,7 +969,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 28: DIVIDER — FORM HOOKS ==================== -->
+<!-- ==================== SLIDE 25: DIVIDER — FORM HOOKS ==================== -->
 <section class="slide divider-slide" data-presenter="p2">
   <div style="font-size:1rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--accent-purple); margin-bottom:16px;">Section</div>
   <div class="section-title">Form Hooks</div>
@@ -965,7 +977,7 @@ tr:last-child td { border-bottom: none; }
   <div class="section-subtitle">useActionState &middot; useFormStatus &middot; useOptimistic</div>
 </section>
 
-<!-- ==================== SLIDE 29: useActionState — EXPLANATION ==================== -->
+<!-- ==================== SLIDE 26: useActionState — EXPLANATION ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h1>useActionState</h1>
@@ -1004,7 +1016,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 30: useActionState — CODE ==================== -->
+<!-- ==================== SLIDE 27: useActionState — CODE ==================== -->
 <section class="slide code-slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h2 style="margin-bottom:12px;">useActionState in Practice</h2>
@@ -1029,7 +1041,7 @@ tr:last-child td { border-bottom: none; }
 }</code></pre>
 </section>
 
-<!-- ==================== SLIDE 31: useFormStatus ==================== -->
+<!-- ==================== SLIDE 28: useFormStatus ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h1>useFormStatus</h1>
@@ -1055,7 +1067,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 32: useOptimistic — EXPLANATION ==================== -->
+<!-- ==================== SLIDE 29: useOptimistic — EXPLANATION ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h1>useOptimistic</h1>
@@ -1084,7 +1096,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 33: useOptimistic — CODE ==================== -->
+<!-- ==================== SLIDE 30: useOptimistic — CODE ==================== -->
 <section class="slide code-slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h2 style="margin-bottom:16px;">useOptimistic in Practice</h2>
@@ -1107,7 +1119,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 34: THREE HOOKS TOGETHER ==================== -->
+<!-- ==================== SLIDE 31: THREE HOOKS TOGETHER ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h2>All Three Hooks Together</h2>
@@ -1136,7 +1148,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 35: FORM HOOKS RECAP ==================== -->
+<!-- ==================== SLIDE 32: FORM HOOKS RECAP ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h2>Form Hooks &mdash; One-Liner Recap</h2>
@@ -1156,7 +1168,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 36: DIVIDER — USE HOOK ==================== -->
+<!-- ==================== SLIDE 33: DIVIDER — USE HOOK ==================== -->
 <section class="slide divider-slide" data-presenter="p2">
   <div style="font-size:1rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--accent-purple); margin-bottom:16px;">Section</div>
   <div class="section-title">The <code style="font-family:var(--font-code); color:var(--accent-react);">use</code> Hook</div>
@@ -1164,7 +1176,7 @@ tr:last-child td { border-bottom: none; }
   <div class="section-subtitle">Read promises and context anywhere in your component</div>
 </section>
 
-<!-- ==================== SLIDE 37: use(promise) ==================== -->
+<!-- ==================== SLIDE 34: use(promise) ==================== -->
 <section class="slide code-slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h2 style="margin-bottom:4px;">use(promise) &mdash; Reading Promises</h2>
@@ -1193,7 +1205,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 38: use(Context) ==================== -->
+<!-- ==================== SLIDE 35: use(Context) ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h2>use(Context) &mdash; Conditional Context</h2>
@@ -1225,7 +1237,7 @@ tr:last-child td { border-bottom: none; }
 }</code></pre>
 </section>
 
-<!-- ==================== SLIDE 39: USE HOOK — KEY TAKEAWAY ==================== -->
+<!-- ==================== SLIDE 36: USE HOOK — KEY TAKEAWAY ==================== -->
 <section class="slide" data-presenter="p2" style="align-items:center;">
   <span class="badge p2">Data</span>
   <div class="takeaway" style="text-align:center; font-size:2.2rem; max-width:90%;">
@@ -1237,7 +1249,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 40: DIVIDER — SERVER ==================== -->
+<!-- ==================== SLIDE 37: DIVIDER — SERVER ==================== -->
 <section class="slide divider-slide" data-presenter="p2">
   <div style="font-size:1rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--accent-purple); margin-bottom:16px;">Section</div>
   <div class="section-title">Server Components<br>&amp; Server Actions</div>
@@ -1245,7 +1257,7 @@ tr:last-child td { border-bottom: none; }
   <div class="section-subtitle">Stabilized in React 19 &mdash; full-stack React</div>
 </section>
 
-<!-- ==================== SLIDE 41: SERVER COMPONENTS ==================== -->
+<!-- ==================== SLIDE 38: SERVER COMPONENTS ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h1>Server Components</h1>
@@ -1273,7 +1285,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 42: SERVER COMPONENTS — IN PRACTICE ==================== -->
+<!-- ==================== SLIDE 39: SERVER COMPONENTS — IN PRACTICE ==================== -->
 <section class="slide code-slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h2 style="margin-bottom:4px;">Server Components &mdash; In Practice</h2>
@@ -1302,7 +1314,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 43: SERVER ACTIONS — EXPLANATION ==================== -->
+<!-- ==================== SLIDE 40: SERVER ACTIONS — EXPLANATION ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h1>Server Actions</h1>
@@ -1324,7 +1336,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 43: SERVER ACTIONS — CODE ==================== -->
+<!-- ==================== SLIDE 40: SERVER ACTIONS — CODE ==================== -->
 <section class="slide code-slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h2 style="margin-bottom:16px;">Server Actions in Practice</h2>
@@ -1347,7 +1359,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 44: SECURITY & PRACTICAL POINTS ==================== -->
+<!-- ==================== SLIDE 41: SECURITY & PRACTICAL POINTS ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h2>Server Actions &mdash; Important Points</h2>
@@ -1367,7 +1379,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 45: HYDRATION ERROR DIFFS ==================== -->
+<!-- ==================== SLIDE 42: HYDRATION ERROR DIFFS ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h1>Hydration Error Improvements</h1>
@@ -1408,7 +1420,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 47: IMPROVED ERROR REPORTING ==================== -->
+<!-- ==================== SLIDE 44: IMPROVED ERROR REPORTING ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h2>Improved Error Reporting</h2>
@@ -1433,7 +1445,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 47: CODEMODS & UPGRADE TOOLING ==================== -->
+<!-- ==================== SLIDE 44: CODEMODS & UPGRADE TOOLING ==================== -->
 <section class="slide code-slide" data-presenter="shared">
   <span class="badge shared">Migration</span>
   <h2 style="margin-bottom:4px;">Codemods &amp; Upgrade Tooling</h2>
@@ -1458,7 +1470,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 48: DIVIDER — MIGRATION ==================== -->
+<!-- ==================== SLIDE 45: DIVIDER — MIGRATION ==================== -->
 <section class="slide divider-slide" data-presenter="shared">
   <div style="font-size:1rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--accent-green); margin-bottom:16px;">Shared Closing</div>
   <div class="section-title">Migration &amp; Tooling</div>
@@ -1466,7 +1478,7 @@ tr:last-child td { border-bottom: none; }
   <div class="section-subtitle">How to adopt React 19 in your codebase</div>
 </section>
 
-<!-- ==================== SLIDE 48: MIGRATION STRATEGY ==================== -->
+<!-- ==================== SLIDE 45: MIGRATION STRATEGY ==================== -->
 <section class="slide" data-presenter="shared" style="padding:40px 60px; justify-content:flex-start; padding-top:45px;">
   <span class="badge shared">Migration</span>
   <h2 style="margin-bottom:12px;">Migration Strategy</h2>
@@ -1512,7 +1524,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 49: SUMMARY TABLE ==================== -->
+<!-- ==================== SLIDE 46: SUMMARY TABLE ==================== -->
 <section class="slide" data-presenter="shared" style="padding:30px 60px; justify-content:flex-start; padding-top:40px;">
   <span class="badge shared">Migration</span>
   <h2 style="margin-bottom:8px;">React 19 Feature Summary</h2>
