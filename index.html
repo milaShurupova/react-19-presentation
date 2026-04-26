@@ -4,26 +4,43 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>React 19: What's New and Why It Matters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap">
 <style>
 /* ===== RESET & BASE ===== */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a1a; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #ffffff; }
+body {
+  background-image: url('assets/zionet-brand-bg.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-attachment: fixed;
+  font-family: 'Rubik', system-ui, -apple-system, sans-serif;
+  color: #1a1a2e;
+}
 
 /* ===== CSS VARIABLES ===== */
 :root {
-  --bg-primary: #0a0a1a;
-  --bg-slide: #111127;
-  --bg-code: #1a1a2e;
-  --bg-accent: #162033;
-  --text-primary: #f0f0f5;
-  --text-secondary: #8892b0;
-  --accent-react: #61dafb;
-  --accent-green: #7ec699;
-  --accent-orange: #e5a54b;
-  --accent-red: #ff6b6b;
-  --accent-purple: #c792ea;
-  --font-body: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --font-code: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  --bg-primary: #ffffff;
+  --bg-slide: transparent;
+  --bg-code: #f4f7fb;
+  --bg-accent: #eef3fa;
+  --text-primary: #1a1a2e;
+  --text-secondary: #5a6b8c;
+  --brand-navy: #0c1e5e;
+  --brand-cyan: #7dd1ed;
+  --brand-mid: #3a6ea5;
+  /* Existing accent-* names remapped to brand-aware light-theme equivalents
+     so existing class usage keeps working without HTML changes. */
+  --accent-react: #0c1e5e;       /* primary brand accent (was React cyan) */
+  --accent-green: #15803d;
+  --accent-orange: #c2410c;
+  --accent-red: #be123c;
+  --accent-purple: #7c3aed;
+  --font-body: 'Rubik', system-ui, -apple-system, sans-serif;
+  --font-code: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
 }
 
 /* ===== SLIDE CONTAINER ===== */
@@ -35,7 +52,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a1a; }
   top: 0; left: 0;
   width: 100vw;
   height: 100vh;
-  padding: 60px 80px;
+  /* Top + bottom padding clears the brand chrome (top gradient line, bottom logo + line) */
+  padding: 70px 90px 100px;
   background: var(--bg-slide);
   color: var(--text-primary);
   font-family: var(--font-body);
@@ -60,29 +78,28 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a1a; }
   text-align: center;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #111127 0%, #162033 50%, #111127 100%);
 }
 .code-slide {
   justify-content: flex-start;
-  padding-top: 50px;
+  padding-top: 80px;
 }
 .two-col-slide {
   justify-content: flex-start;
-  padding-top: 50px;
+  padding-top: 80px;
 }
 
 /* ===== TYPOGRAPHY ===== */
-h1 { font-size: 2.8rem; font-weight: 700; line-height: 1.2; margin-bottom: 24px; color: var(--text-primary); }
-h2 { font-size: 2.2rem; font-weight: 600; line-height: 1.3; margin-bottom: 20px; color: var(--text-primary); }
-h3 { font-size: 1.6rem; font-weight: 600; margin-bottom: 12px; color: var(--accent-react); }
-.subtitle { font-size: 1.6rem; color: var(--text-secondary); font-weight: 300; }
-.big-title { font-size: 3.5rem; font-weight: 700; letter-spacing: -0.02em; }
-.section-title { font-size: 3rem; font-weight: 700; }
-.section-subtitle { font-size: 1.4rem; color: var(--text-secondary); margin-top: 12px; }
+h1 { font-size: 2.8rem; font-weight: 700; line-height: 1.2; margin-bottom: 24px; color: var(--brand-navy); letter-spacing: -0.01em; }
+h2 { font-size: 2.2rem; font-weight: 600; line-height: 1.3; margin-bottom: 20px; color: var(--brand-navy); letter-spacing: -0.005em; }
+h3 { font-size: 1.6rem; font-weight: 600; margin-bottom: 12px; color: var(--brand-navy); }
+.subtitle { font-size: 1.6rem; color: var(--text-secondary); font-weight: 400; }
+.big-title { font-size: 3.8rem; font-weight: 700; letter-spacing: -0.02em; color: var(--brand-navy); }
+.section-title { font-size: 3.2rem; font-weight: 700; color: var(--brand-navy); letter-spacing: -0.015em; }
+.section-subtitle { font-size: 1.4rem; color: var(--text-secondary); margin-top: 12px; font-weight: 400; }
 
 ul { list-style: none; padding: 0; }
 ul li { padding: 6px 0; padding-left: 28px; position: relative; }
-ul li::before { content: ''; position: absolute; left: 0; top: 16px; width: 8px; height: 8px; background: var(--accent-react); border-radius: 50%; }
+ul li::before { content: ''; position: absolute; left: 0; top: 16px; width: 8px; height: 8px; background: var(--brand-navy); border-radius: 50%; }
 ul.orange li::before { background: var(--accent-orange); }
 ul.green li::before { background: var(--accent-green); }
 ul.purple li::before { background: var(--accent-purple); }
@@ -90,13 +107,15 @@ ul.purple li::before { background: var(--accent-purple); }
 /* ===== CODE BLOCKS ===== */
 .code-block {
   background: var(--bg-code);
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 24px 32px;
   font-family: var(--font-code);
   font-size: 1.1rem;
   line-height: 1.7;
   overflow-x: auto;
-  border-left: 4px solid var(--accent-react);
+  border: 1px solid rgba(12,30,94,0.08);
+  border-left: 4px solid var(--brand-navy);
+  color: #1a1a2e;
   white-space: pre;
   tab-size: 2;
 }
@@ -122,44 +141,43 @@ ul.purple li::before { background: var(--accent-purple); }
 .code-label.before { color: var(--accent-orange); }
 .code-label.after { color: var(--accent-green); }
 
-/* Syntax highlighting */
-.kw { color: #c792ea; }
-.fn { color: #82aaff; }
-.tag { color: #f07178; }
-.attr { color: #ffcb6b; }
-.str { color: #c3e88d; }
-.num { color: #f78c6c; }
-.cm { color: #546e7a; font-style: italic; }
-.param { color: #e0e0e0; }
-.dir { color: #c3e88d; font-weight: bold; }
+/* Syntax highlighting (light-theme readable, AA contrast) */
+.kw { color: #7c3aed; font-weight: 500; }
+.fn { color: #1d4ed8; }
+.tag { color: #be123c; }
+.attr { color: #a16207; }
+.str { color: #15803d; }
+.num { color: #c2410c; }
+.cm { color: #64748b; font-style: italic; }
+.param { color: #1a1a2e; }
+.dir { color: #15803d; font-weight: 700; }
 
 /* ===== PRESENTER BADGES ===== */
 .badge {
   position: absolute;
   top: 24px;
   right: 32px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.05em;
-  padding: 4px 12px;
-  border-radius: 12px;
-  opacity: 0.5;
+  letter-spacing: 0.06em;
+  padding: 5px 12px;
+  border-radius: 999px;
   text-transform: uppercase;
   font-family: var(--font-body);
 }
-.badge.p1 { background: rgba(97,218,251,0.15); color: #61dafb; }
-.badge.p2 { background: rgba(199,146,234,0.15); color: #c792ea; }
-.badge.shared { background: rgba(126,198,153,0.15); color: #7ec699; }
+.badge.p1 { background: var(--brand-navy); color: #ffffff; }
+.badge.p2 { background: var(--brand-cyan); color: var(--brand-navy); }
+.badge.shared { background: transparent; color: var(--brand-navy); border: 1.5px solid var(--brand-navy); padding: 3.5px 10.5px; }
 
 /* ===== SPECIAL ELEMENTS ===== */
 .takeaway {
-  background: rgba(97,218,251,0.08);
-  border-left: 4px solid var(--accent-react);
+  background: rgba(125,209,237,0.14);
+  border-left: 4px solid var(--brand-navy);
   padding: 24px 32px;
   border-radius: 0 12px 12px 0;
   font-size: 1.8rem;
   font-style: italic;
-  color: var(--accent-react);
+  color: var(--brand-navy);
   max-width: 80%;
 }
 .two-col {
@@ -175,26 +193,29 @@ ul.purple li::before { background: var(--accent-purple); }
   width: 100%;
 }
 .card {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.85);
   border-radius: 12px;
   padding: 20px 24px;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(12,30,94,0.14);
+  box-shadow: 0 2px 8px rgba(12,30,94,0.06);
 }
-.card h3 { font-size: 1.3rem; margin-bottom: 8px; }
+.card h3 { font-size: 1.3rem; margin-bottom: 8px; color: var(--brand-navy); }
 .card p { font-size: 1.1rem; color: var(--text-secondary); }
 
 .inline-code {
   background: var(--bg-code);
+  color: var(--brand-navy);
   padding: 2px 8px;
   border-radius: 4px;
   font-family: var(--font-code);
   font-size: 0.9em;
+  border: 1px solid rgba(12,30,94,0.1);
 }
 
 .divider-accent {
   width: 80px;
   height: 4px;
-  background: linear-gradient(90deg, var(--accent-react), var(--accent-purple));
+  background: linear-gradient(90deg, var(--brand-navy), var(--brand-cyan));
   border-radius: 2px;
   margin: 16px auto 0;
 }
@@ -207,25 +228,30 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 1rem;
+  background: rgba(255,255,255,0.7);
+  border-radius: 8px;
+  overflow: hidden;
 }
 th {
   text-align: left;
-  padding: 10px 16px;
-  border-bottom: 2px solid rgba(97,218,251,0.3);
-  color: var(--accent-react);
+  padding: 12px 16px;
+  background: var(--brand-navy);
+  color: #ffffff;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 td {
-  padding: 8px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(12,30,94,0.08);
   font-size: 0.95rem;
+  color: var(--text-primary);
 }
+tbody tr:nth-child(even) td { background: rgba(125,209,237,0.07); }
 tr:last-child td { border-bottom: none; }
-.p1-row td:first-child { border-left: 3px solid var(--accent-react); }
-.p2-row td:first-child { border-left: 3px solid var(--accent-purple); }
+.p1-row td:first-child { border-left: 3px solid var(--brand-navy); }
+.p2-row td:first-child { border-left: 3px solid var(--brand-cyan); }
 
 /* ===== PROGRESS & COUNTER ===== */
 #progress {
@@ -233,23 +259,27 @@ tr:last-child td { border-bottom: none; }
   top: 0;
   left: 0;
   height: 3px;
-  background: linear-gradient(90deg, #61dafb, #c792ea);
+  background: linear-gradient(90deg, var(--brand-navy), var(--brand-cyan));
   transition: width 300ms ease;
   z-index: 100;
+  opacity: 0.95;
 }
 #slide-num {
   position: fixed;
-  bottom: 20px;
-  right: 32px;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  opacity: 0.5;
+  bottom: 10px;
+  right: 28px;
+  font-size: 0.78rem;
+  color: var(--brand-navy);
+  opacity: 0.55;
   font-family: var(--font-code);
+  font-weight: 500;
   z-index: 100;
+  letter-spacing: 0.04em;
 }
 
 /* ===== PRINT ===== */
 @media print {
+  html, body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #ffffff; }
   .slide { display: flex !important; position: relative !important; page-break-after: always; height: auto; min-height: 100vh; }
   #slide-num, #progress { display: none; }
 }
@@ -266,7 +296,7 @@ tr:last-child td { border-bottom: none; }
 .gap-16 { gap: 16px; }
 .text-secondary { color: var(--text-secondary); }
 .text-small { font-size: 1.15rem; }
-.text-react { color: var(--accent-react); }
+.text-react { color: var(--brand-navy); }
 .text-green { color: var(--accent-green); }
 .text-orange { color: var(--accent-orange); }
 .text-purple { color: var(--accent-purple); }
@@ -277,17 +307,19 @@ tr:last-child td { border-bottom: none; }
   font-family: var(--font-code);
   font-size: 1.15rem;
   background: var(--bg-code);
+  color: var(--brand-navy);
   padding: 12px 20px;
   border-radius: 8px;
-  border-left: 3px solid var(--accent-react);
+  border: 1px solid rgba(12,30,94,0.08);
+  border-left: 3px solid var(--brand-navy);
 }
 .number-list { counter-reset: item; }
 .number-list li { padding-left: 36px; }
 .number-list li::before {
   content: counter(item);
   counter-increment: item;
-  background: var(--accent-react);
-  color: var(--bg-slide);
+  background: var(--brand-navy);
+  color: #ffffff;
   width: 24px; height: 24px;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
@@ -1479,7 +1511,7 @@ tr:last-child td { border-bottom: none; }
 </section>
 
 <!-- ==================== SLIDE 45: MIGRATION STRATEGY ==================== -->
-<section class="slide" data-presenter="shared" style="padding:40px 60px; justify-content:flex-start; padding-top:45px;">
+<section class="slide" data-presenter="shared" style="padding:45px 60px 95px; justify-content:flex-start;">
   <span class="badge shared">Migration</span>
   <h2 style="margin-bottom:12px;">Migration Strategy</h2>
   <div style="display:flex; gap:20px; flex-wrap:wrap;">
@@ -1525,7 +1557,7 @@ tr:last-child td { border-bottom: none; }
 </section>
 
 <!-- ==================== SLIDE 46: SUMMARY TABLE ==================== -->
-<section class="slide" data-presenter="shared" style="padding:30px 60px; justify-content:flex-start; padding-top:40px;">
+<section class="slide" data-presenter="shared" style="padding:40px 60px 95px; justify-content:flex-start;">
   <span class="badge shared">Migration</span>
   <h2 style="margin-bottom:8px;">React 19 Feature Summary</h2>
   <div style="overflow-y:auto; max-height:480px;">
