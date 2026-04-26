@@ -47,13 +47,15 @@ body {
 .slide {
   display: none;
   flex-direction: column;
-  justify-content: center;
+  /* Content slides: pin headings to top-left consistently. Title/divider slides re-center below. */
+  justify-content: flex-start;
   position: absolute;
   top: 0; left: 0;
   width: 100vw;
   height: 100vh;
-  /* Top + bottom padding clears the brand chrome (top gradient line, bottom logo + line) */
-  padding: 70px 90px 100px;
+  /* Top + bottom padding clears the brand chrome. Bottom uses vh so it scales with the
+     stretched background image (logo sits at ~88% from top of viewport). */
+  padding: 7vh 90px 14vh;
   background: var(--bg-slide);
   color: var(--text-primary);
   font-family: var(--font-body);
@@ -80,12 +82,10 @@ body {
   justify-content: center;
 }
 .code-slide {
-  justify-content: flex-start;
-  padding-top: 80px;
+  padding-top: 8vh;
 }
 .two-col-slide {
-  justify-content: flex-start;
-  padding-top: 80px;
+  padding-top: 8vh;
 }
 
 /* ===== TYPOGRAPHY ===== */
@@ -1511,7 +1511,7 @@ tr:last-child td { border-bottom: none; }
 </section>
 
 <!-- ==================== SLIDE 45: MIGRATION STRATEGY ==================== -->
-<section class="slide" data-presenter="shared" style="padding:45px 60px 95px; justify-content:flex-start;">
+<section class="slide" data-presenter="shared" style="padding:5vh 60px 14vh;">
   <span class="badge shared">Migration</span>
   <h2 style="margin-bottom:12px;">Migration Strategy</h2>
   <div style="display:flex; gap:20px; flex-wrap:wrap;">
@@ -1557,10 +1557,10 @@ tr:last-child td { border-bottom: none; }
 </section>
 
 <!-- ==================== SLIDE 46: SUMMARY TABLE ==================== -->
-<section class="slide" data-presenter="shared" style="padding:40px 60px 95px; justify-content:flex-start;">
+<section class="slide" data-presenter="shared" style="padding:5vh 60px 14vh;">
   <span class="badge shared">Migration</span>
   <h2 style="margin-bottom:8px;">React 19 Feature Summary</h2>
-  <div style="overflow-y:auto; max-height:480px;">
+  <div style="flex:1; min-height:0; overflow-y:auto;">
     <table style="font-size:0.9rem;">
       <thead>
         <tr>
