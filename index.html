@@ -498,49 +498,7 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 8: COMPILER — PRACTICAL GUIDANCE ==================== -->
-<section class="slide" data-presenter="p1">
-  <span class="badge p1">Compiler</span>
-  <h2>React Compiler &mdash; What Changes in Your Code?</h2>
-  <div class="two-col" style="margin-top:24px; gap:32px;">
-    <div class="card" style="border-left:3px solid var(--accent-green); padding:20px 24px;">
-      <h3 style="color:var(--accent-green); margin-bottom:16px;">&#10003; Safe to Remove</h3>
-      <ul style="list-style:none; padding:0;">
-        <li style="margin-bottom:14px;">
-          <code class="inline-code">React.memo()</code>
-          <div class="text-secondary" style="font-size:0.95rem; margin-top:4px;">Compiler optimizes re-renders automatically</div>
-        </li>
-        <li style="margin-bottom:14px;">
-          <code class="inline-code">useMemo()</code> <span class="text-secondary">for derived values</span>
-          <div class="text-secondary" style="font-size:0.95rem; margin-top:4px;">Compiler tracks dependencies for you</div>
-        </li>
-        <li>
-          <code class="inline-code">useCallback()</code>
-          <div class="text-secondary" style="font-size:0.95rem; margin-top:4px;">Compiler stabilizes function references</div>
-        </li>
-      </ul>
-    </div>
-    <div class="card" style="border-left:3px solid var(--accent-orange); padding:20px 24px;">
-      <h3 style="color:var(--accent-orange); margin-bottom:16px;">&#9888; Keep When</h3>
-      <ul style="list-style:none; padding:0;">
-        <li style="margin-bottom:14px;">
-          <code class="inline-code">useMemo()</code> <span class="text-secondary">guards expensive computation</span>
-          <div class="text-secondary" style="font-size:0.95rem; margin-top:4px;">Encodes business logic, not just rendering perf</div>
-        </li>
-        <li>
-          <span>Code the compiler can't analyze</span>
-          <div class="text-secondary" style="font-size:0.95rem; margin-top:4px;">Dynamic patterns, eval, non-standard meta-programming</div>
-        </li>
-      </ul>
-    </div>
-  </div>
-  <div class="takeaway" style="margin-top:28px; font-size:1.15rem; max-width:100%;">
-    Enable in all new projects. Adopt incrementally in existing ones &mdash; start with non-critical pages.
-  </div>
-</section>
-
-
-<!-- ==================== SLIDE 9: COMPILER — INSTALLATION ==================== -->
+<!-- ==================== SLIDE 8: COMPILER — INSTALLATION ==================== -->
 <section class="slide code-slide" data-presenter="p1">
   <span class="badge p1">Compiler</span>
   <h2 style="margin-bottom:16px;">Installing the React Compiler in Next.js</h2>
@@ -801,18 +759,18 @@ tr:last-child td { border-bottom: none; }
     <div>
       <h3 style="color:var(--accent-orange);">The Problem</h3>
       <ul class="orange" style="font-size:1.2rem;">
-        <li>Conditional rendering (<code class="inline-code">{show && &lt;C /&gt;}</code>) <strong>unmounts</strong> the component</li>
-        <li>State is destroyed &mdash; form inputs, scroll position, expanded sections</li>
-        <li>Re-mounting is expensive &mdash; data re-fetched, effects re-run</li>
+        <li><code class="inline-code">{show && &lt;C /&gt;}</code> &rarr; component <strong>unmounts</strong> when hidden</li>
+        <li>State destroyed: form inputs, scroll, expanded sections</li>
+        <li>Re-mount = re-fetch data + re-run effects (slow)</li>
       </ul>
     </div>
     <div>
       <h3 style="color:var(--accent-green);">The Solution</h3>
       <ul class="green" style="font-size:1.2rem;">
-        <li><code class="inline-code">mode="hidden"</code> hides with CSS (<code class="inline-code">display: none</code>)</li>
-        <li>React &amp; DOM state fully preserved</li>
-        <li>Effects cleaned up, re-mounted on reveal</li>
-        <li>Enables <strong>pre-rendering</strong> hidden content</li>
+        <li><code class="inline-code">mode="hidden"</code> &rarr; just CSS <code class="inline-code">display: none</code></li>
+        <li>Component stays mounted &mdash; all state alive</li>
+        <li>Effects pause when hidden, resume on reveal</li>
+        <li>Can <strong>pre-render</strong> hidden content in background</li>
       </ul>
     </div>
   </div>
@@ -833,51 +791,38 @@ tr:last-child td { border-bottom: none; }
   <div class="code-compare" style="gap:16px;">
     <div>
       <div class="code-label before">Conditional (state lost)</div>
-      <pre class="code-block before" style="padding:16px 22px; max-height:430px; overflow-y:auto;"><code><span class="kw">function</span> <span class="fn">App</span>() {
-  <span class="kw">const</span> [<span class="param">show</span>, <span class="param">setShow</span>] = <span class="fn">useState</span>(<span class="kw">true</span>);
+      <pre class="code-block before" style="padding:16px 22px;"><code><span class="cm">// Classic conditional render</span>
+{<span class="param">show</span> &amp;&amp; <span class="tag">&lt;Sidebar</span> <span class="tag">/&gt;</span>}
 
-  <span class="kw">return</span> (
-    <span class="tag">&lt;&gt;</span>
-      <span class="cm">{/* Unmounts &rarr; state lost */}</span>
-      {<span class="param">show</span> &amp;&amp; <span class="tag">&lt;Sidebar</span> <span class="tag">/&gt;</span>}
 
-      <span class="tag">&lt;button</span> <span class="attr">onClick</span>={() =&gt;
-        <span class="fn">setShow</span>(!<span class="param">show</span>)
-      }<span class="tag">&gt;</span>
-        Toggle
-      <span class="tag">&lt;/button&gt;</span>
-    <span class="tag">&lt;/&gt;</span>
-  );
-}</code></pre>
+<span class="cm">// &#10060; When show = false:</span>
+<span class="cm">//   &bull; &lt;Sidebar/&gt; unmounts</span>
+<span class="cm">//   &bull; All state destroyed</span>
+<span class="cm">//   &bull; Effects torn down</span>
+<span class="cm">//   &bull; Re-mount = re-fetch data</span></code></pre>
     </div>
     <div>
       <div class="code-label after">Activity (state preserved)</div>
-      <pre class="code-block after" style="padding:16px 22px; max-height:430px; overflow-y:auto;"><code><span class="kw">function</span> <span class="fn">App</span>() {
-  <span class="kw">const</span> [<span class="param">show</span>, <span class="param">setShow</span>] = <span class="fn">useState</span>(<span class="kw">true</span>);
+      <pre class="code-block after" style="padding:16px 22px;"><code><span class="cm">// Wrap in &lt;Activity&gt;</span>
+<span class="tag">&lt;Activity</span> <span class="attr">mode</span>={<span class="param">show</span> ? <span class="str">"visible"</span> : <span class="str">"hidden"</span>}<span class="tag">&gt;</span>
+  <span class="tag">&lt;Sidebar</span> <span class="tag">/&gt;</span>
+<span class="tag">&lt;/Activity&gt;</span>
 
-  <span class="kw">return</span> (
-    <span class="tag">&lt;&gt;</span>
-      <span class="cm">{/* Hidden via CSS &rarr; state kept */}</span>
-      <span class="tag">&lt;Activity</span> <span class="attr">mode</span>={<span class="param">show</span>
-        ? <span class="str">"visible"</span> : <span class="str">"hidden"</span>}<span class="tag">&gt;</span>
-        <span class="tag">&lt;Sidebar</span> <span class="tag">/&gt;</span>
-      <span class="tag">&lt;/Activity&gt;</span>
-
-      <span class="tag">&lt;button</span> <span class="attr">onClick</span>={() =&gt;
-        <span class="fn">setShow</span>(!<span class="param">show</span>)
-      }<span class="tag">&gt;</span>
-        Toggle
-      <span class="tag">&lt;/button&gt;</span>
-    <span class="tag">&lt;/&gt;</span>
-  );
-}</code></pre>
+<span class="cm">// &#10003; When mode = "hidden":</span>
+<span class="cm">//   &bull; CSS display: none (no unmount)</span>
+<span class="cm">//   &bull; State preserved</span>
+<span class="cm">//   &bull; Effects pause / resume</span>
+<span class="cm">//   &bull; Instant re-show</span></code></pre>
     </div>
   </div>
-  <div style="margin-top:10px; display:flex; gap:16px; font-size:1rem; flex-wrap:wrap;">
-    <div class="text-green">&#10003; Form inputs preserved</div>
-    <div class="text-green">&#10003; Scroll position kept</div>
-    <div class="text-green">&#10003; No re-mount cost</div>
-    <div class="text-green">&#10003; Effects properly cleaned up</div>
+  <div class="code-compare" style="margin-top:10px; gap:16px;">
+    <div></div>
+    <div style="display:flex; gap:14px 18px; font-size:1rem; flex-wrap:wrap;">
+      <div class="text-green">&#10003; Form inputs preserved</div>
+      <div class="text-green">&#10003; Scroll position kept</div>
+      <div class="text-green">&#10003; No re-mount cost</div>
+      <div class="text-green">&#10003; Effects properly cleaned up</div>
+    </div>
   </div>
 </section>
 
@@ -886,20 +831,17 @@ tr:last-child td { border-bottom: none; }
   <span class="badge p2">Data</span>
   <h2 style="margin-bottom:4px;">&lt;Activity&gt; + Suspense &mdash; Pre-rendering</h2>
   <p class="text-secondary mb-16" style="font-size:1.1rem;">Hidden Activity boundaries load data in the background &mdash; instant reveal when switched to visible</p>
-  <pre class="code-block"><code><span class="kw">function</span> <span class="fn">TabLayout</span>() {
-  <span class="kw">const</span> [<span class="param">tab</span>, <span class="param">setTab</span>] = <span class="fn">useState</span>(<span class="str">'home'</span>);
+  <pre class="code-block"><code><span class="tag">&lt;Suspense</span> <span class="attr">fallback</span>={<span class="tag">&lt;p&gt;</span>Loading...<span class="tag">&lt;/p&gt;</span>}<span class="tag">&gt;</span>
+  <span class="cm">{/* Active tab &mdash; visible to user */}</span>
+  <span class="tag">&lt;Activity</span> <span class="attr">mode</span>={<span class="param">tab</span> === <span class="str">'home'</span> ? <span class="str">'visible'</span> : <span class="str">'hidden'</span>}<span class="tag">&gt;</span>
+    <span class="tag">&lt;Home</span> <span class="tag">/&gt;</span>
+  <span class="tag">&lt;/Activity&gt;</span>
 
-  <span class="kw">return</span> (
-    <span class="tag">&lt;Suspense</span> <span class="attr">fallback</span>={<span class="tag">&lt;p&gt;</span>Loading...<span class="tag">&lt;/p&gt;</span>}<span class="tag">&gt;</span>
-      <span class="tag">&lt;Activity</span> <span class="attr">mode</span>={<span class="param">tab</span> === <span class="str">'home'</span> ? <span class="str">'visible'</span> : <span class="str">'hidden'</span>}<span class="tag">&gt;</span>
-        <span class="tag">&lt;Home</span> <span class="tag">/&gt;</span>
-      <span class="tag">&lt;/Activity&gt;</span>
-      <span class="tag">&lt;Activity</span> <span class="attr">mode</span>={<span class="param">tab</span> === <span class="str">'posts'</span> ? <span class="str">'visible'</span> : <span class="str">'hidden'</span>}<span class="tag">&gt;</span>
-        <span class="tag">&lt;Posts</span> <span class="tag">/&gt;</span>  <span class="cm">{/* Pre-fetches while hidden */}</span>
-      <span class="tag">&lt;/Activity&gt;</span>
-    <span class="tag">&lt;/Suspense&gt;</span>
-  );
-}</code></pre>
+  <span class="cm">{/* Hidden tab &mdash; React still loads its data in background */}</span>
+  <span class="tag">&lt;Activity</span> <span class="attr">mode</span>={<span class="param">tab</span> === <span class="str">'posts'</span> ? <span class="str">'visible'</span> : <span class="str">'hidden'</span>}<span class="tag">&gt;</span>
+    <span class="tag">&lt;Posts</span> <span class="tag">/&gt;</span>  <span class="cm">{/* &uarr; pre-fetched while hidden &rarr; instant on switch */}</span>
+  <span class="tag">&lt;/Activity&gt;</span>
+<span class="tag">&lt;/Suspense&gt;</span></code></pre>
   <div style="margin-top:20px; display:flex; gap:16px; font-size:1.05rem; flex-wrap:wrap;">
     <div class="card" style="flex:1; min-width:200px; padding:12px 16px;">
       <span class="text-purple">Suspense</span> <span class="text-secondary">&mdash; loading fallback</span>
@@ -913,91 +855,103 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 21: ACTIONS — THE OLD PATTERN ==================== -->
+<!-- ==================== SLIDE 21: ACTIONS — OLD vs NEW PATTERN ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
-  <h1>Actions</h1>
-  <h2 style="color:var(--accent-orange); font-size:1.8rem;">The Old Pattern (React 18)</h2>
-  <ul class="orange" style="font-size:1.3rem; margin-top:12px;">
-    <li><code class="inline-code">onSubmit</code> handler on the form</li>
-    <li><code class="inline-code">event.preventDefault()</code> to stop page reload</li>
-    <li><code class="inline-code">fetch()</code> to send data</li>
-    <li><code class="inline-code">useState</code> for loading, error, and success state</li>
-    <li>Try/catch for error handling</li>
-  </ul>
-  <div style="margin-top:32px; color:var(--accent-orange); font-size:1.2rem; font-style:italic;">
-    Lots of boilerplate for every single form.
+  <h1 style="margin-bottom:6px;">Actions &mdash; Old vs New</h1>
+  <p class="text-secondary" style="font-size:1.1rem; margin-bottom:18px;">The same form, two eras of React</p>
+  <div class="two-col" style="gap:32px;">
+    <div>
+      <h2 style="color:var(--accent-orange); font-size:1.5rem; margin-bottom:10px;">React 18 &mdash; manual</h2>
+      <ul class="orange" style="font-size:1.1rem;">
+        <li><code class="inline-code">onSubmit</code> handler on <code class="inline-code">&lt;form&gt;</code></li>
+        <li><code class="inline-code">e.preventDefault()</code> &mdash; stop browser reload</li>
+        <li><code class="inline-code">fetch()</code> &mdash; manually send data</li>
+        <li><code class="inline-code">useState</code> &times; 3 &mdash; <code class="inline-code">isPending</code>, <code class="inline-code">error</code>, <code class="inline-code">result</code></li>
+        <li><code class="inline-code">try/catch</code> &mdash; handle errors</li>
+      </ul>
+      <div style="margin-top:14px; color:var(--accent-orange); font-size:1.05rem; font-style:italic;">
+        20+ lines of boilerplate. Per form.
+      </div>
+    </div>
+    <div>
+      <h2 style="color:var(--accent-green); font-size:1.5rem; margin-bottom:10px;">React 19 &mdash; automatic</h2>
+      <ul class="green" style="font-size:1.1rem;">
+        <li>async fn to <code class="inline-code">&lt;form action={...}&gt;</code></li>
+        <li>React handles transition <strong>automatically</strong></li>
+        <li>No <code class="inline-code">e.preventDefault()</code> &mdash; React intercepts</li>
+        <li>No manual <code class="inline-code">useState</code> for loading / error</li>
+        <li><code class="inline-code">FormData</code> &mdash; uncontrolled inputs</li>
+      </ul>
+      <div style="margin-top:14px; color:var(--accent-green); font-size:1.05rem; font-style:italic;">
+        Half the code. Zero boilerplate.
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:18px; padding:12px 18px;">
+    <strong style="color:var(--brand-navy);">Key insight</strong> &mdash; Actions are wrapped in <code class="inline-code">useTransition</code> under the hood. The rest of the UI stays interactive during submission.
   </div>
 </section>
 
-<!-- ==================== SLIDE 22: ACTIONS — OLD FORM CODE ==================== -->
+<!-- ==================== SLIDE 22: ACTIONS — FORMS CODE COMPARE ==================== -->
 <section class="slide code-slide" data-presenter="p2">
   <span class="badge p2">Data</span>
-  <h2 style="margin-bottom:12px;">React 18: A Simple Form</h2>
-  <pre class="code-block small"><code><span class="kw">function</span> <span class="fn">UpdateName</span>() {
+  <h2 style="margin-bottom:6px;">Forms &mdash; React 18 vs React 19</h2>
+  <p class="text-secondary" style="font-size:1rem; margin-bottom:14px;">Same scenario: a form with one input that calls <code class="inline-code">updateName()</code></p>
+  <div class="code-compare" style="gap:16px;">
+    <div>
+      <div class="code-label before">React 18 &mdash; manual wiring</div>
+      <pre class="code-block before" style="padding:14px 18px; font-size:0.85rem; line-height:1.55;"><code><span class="kw">function</span> <span class="fn">UpdateName</span>() {
+  <span class="cm">// 3 manual state slots</span>
   <span class="kw">const</span> [<span class="param">name</span>, <span class="param">setName</span>] = <span class="fn">useState</span>(<span class="str">''</span>);
   <span class="kw">const</span> [<span class="param">error</span>, <span class="param">setError</span>] = <span class="fn">useState</span>(<span class="kw">null</span>);
   <span class="kw">const</span> [<span class="param">isPending</span>, <span class="param">setIsPending</span>] = <span class="fn">useState</span>(<span class="kw">false</span>);
 
   <span class="kw">const</span> <span class="fn">handleSubmit</span> = <span class="kw">async</span> (<span class="param">e</span>) =&gt; {
-    <span class="param">e</span>.<span class="fn">preventDefault</span>();
-    <span class="param">setIsPending</span>(<span class="kw">true</span>);
+    <span class="param">e</span>.<span class="fn">preventDefault</span>();         <span class="cm">// stop reload</span>
+    <span class="param">setIsPending</span>(<span class="kw">true</span>);         <span class="cm">// flip on</span>
     <span class="kw">const</span> <span class="param">error</span> = <span class="kw">await</span> <span class="fn">updateName</span>(<span class="param">name</span>);
-    <span class="param">setIsPending</span>(<span class="kw">false</span>);
+    <span class="param">setIsPending</span>(<span class="kw">false</span>);        <span class="cm">// flip off</span>
     <span class="kw">if</span> (<span class="param">error</span>) <span class="param">setError</span>(<span class="param">error</span>);
   };
 
   <span class="kw">return</span> (
     <span class="tag">&lt;form</span> <span class="attr">onSubmit</span>={<span class="param">handleSubmit</span>}<span class="tag">&gt;</span>
-      <span class="tag">&lt;input</span> <span class="attr">value</span>={<span class="param">name</span>} <span class="attr">onChange</span>={(<span class="param">e</span>) =&gt; <span class="fn">setName</span>(<span class="param">e</span>.target.value)} <span class="tag">/&gt;</span>
+      <span class="tag">&lt;input</span> <span class="attr">value</span>={<span class="param">name</span>}
+        <span class="attr">onChange</span>={(<span class="param">e</span>) =&gt; <span class="fn">setName</span>(<span class="param">e</span>.target.value)} <span class="tag">/&gt;</span>
       <span class="tag">&lt;button</span> <span class="attr">disabled</span>={<span class="param">isPending</span>}<span class="tag">&gt;</span>Update<span class="tag">&lt;/button&gt;</span>
       {<span class="param">error</span> &amp;&amp; <span class="tag">&lt;p&gt;</span>{<span class="param">error</span>}<span class="tag">&lt;/p&gt;</span>}
     <span class="tag">&lt;/form&gt;</span>
   );
 }</code></pre>
-  <div class="text-orange mt-16" style="font-size:1.1rem;">3 useState calls + manual async handling for one form</div>
-</section>
-
-<!-- ==================== SLIDE 23: ACTIONS — THE NEW PATTERN ==================== -->
-<section class="slide" data-presenter="p2">
-  <span class="badge p2">Data</span>
-  <h1>Actions</h1>
-  <h2 style="color:var(--accent-green); font-size:1.8rem;">The New Pattern (React 19)</h2>
-  <ul class="green" style="font-size:1.3rem; margin-top:12px;">
-    <li>Pass an <strong>async function</strong> to the <code class="inline-code">action</code> prop on <code class="inline-code">&lt;form&gt;</code></li>
-    <li>React handles the async transition automatically</li>
-    <li>No need for <code class="inline-code">event.preventDefault()</code></li>
-    <li>No manual loading state management</li>
-    <li>Receives <code class="inline-code">FormData</code> directly</li>
-  </ul>
-  <div style="margin-top:32px; display:flex; gap:24px;">
-    <div class="card" style="flex:1;">
-      <h3>Key insight</h3>
-      <p>Actions work with <code class="inline-code">useTransition</code> under the hood &mdash; the UI stays responsive during submission.</p>
     </div>
-  </div>
-</section>
+    <div>
+      <div class="code-label after">React 19 &mdash; built-in</div>
+      <pre class="code-block after" style="padding:14px 18px; font-size:0.85rem; line-height:1.55;"><code><span class="kw">function</span> <span class="fn">UpdateName</span>() {
+  <span class="cm">// Action &mdash; async fn, receives FormData</span>
+  <span class="kw">const</span> <span class="fn">updateAction</span> = <span class="kw">async</span> (<span class="param">formData</span>) =&gt; {
+    <span class="kw">const</span> <span class="param">error</span> = <span class="kw">await</span> <span class="fn">updateName</span>(
+      <span class="param">formData</span>.<span class="fn">get</span>(<span class="str">"name"</span>)
+    );
+    <span class="kw">if</span> (<span class="param">error</span>) {
+      <span class="cm">// see useActionState &rarr;</span>
+    }
+  };
 
-<!-- ==================== SLIDE 24: ACTIONS — NEW FORM CODE ==================== -->
-<section class="slide code-slide" data-presenter="p2">
-  <span class="badge p2">Data</span>
-  <h2 style="margin-bottom:16px;">React 19: Form Actions</h2>
-  <pre class="code-block"><code><span class="tag">&lt;form</span> <span class="attr">action</span>={<span class="kw">async</span> (<span class="param">formData</span>) =&gt; {
-  <span class="kw">const</span> <span class="param">error</span> = <span class="kw">await</span> <span class="fn">updateName</span>(
-    <span class="param">formData</span>.<span class="fn">get</span>(<span class="str">"name"</span>)
+  <span class="kw">return</span> (
+    <span class="tag">&lt;form</span> <span class="attr">action</span>={<span class="param">updateAction</span>}<span class="tag">&gt;</span>
+      <span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="str">"text"</span> <span class="attr">name</span>=<span class="str">"name"</span> <span class="tag">/&gt;</span>
+      <span class="tag">&lt;button</span> <span class="attr">type</span>=<span class="str">"submit"</span><span class="tag">&gt;</span>Update<span class="tag">&lt;/button&gt;</span>
+    <span class="tag">&lt;/form&gt;</span>
   );
-  <span class="kw">if</span> (<span class="param">error</span>) {
-    <span class="cm">// handle error</span>
-  }
-}}<span class="tag">&gt;</span>
-  <span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="str">"text"</span> <span class="attr">name</span>=<span class="str">"name"</span> <span class="tag">/&gt;</span>
-  <span class="tag">&lt;button</span> <span class="attr">type</span>=<span class="str">"submit"</span><span class="tag">&gt;</span>Update<span class="tag">&lt;/button&gt;</span>
-<span class="tag">&lt;/form&gt;</span></code></pre>
-  <div style="margin-top:24px; display:flex; gap:16px; font-size:1.15rem;">
-    <div class="text-green">&#10003; No <code class="inline-code">preventDefault</code></div>
-    <div class="text-green">&#10003; No <code class="inline-code">useState</code></div>
-    <div class="text-green">&#10003; No try/catch</div>
-    <div class="text-green">&#10003; Native FormData</div>
+}
+
+<span class="cm">// What's gone vs React 18:</span>
+<span class="cm">//   &bull; 3&times; useState</span>
+<span class="cm">//   &bull; e.preventDefault()</span>
+<span class="cm">//   &bull; manual loading toggle</span>
+<span class="cm">//   &bull; controlled inputs</span></code></pre>
+    </div>
   </div>
 </section>
 
@@ -1012,8 +966,12 @@ tr:last-child td { border-bottom: none; }
 <!-- ==================== SLIDE 26: useActionState — EXPLANATION ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
-  <h1>useActionState</h1>
-  <p class="text-secondary" style="font-size:1.2rem; margin-bottom:24px;">Manages the full lifecycle of a form action: previous state, current result, pending state</p>
+  <div style="margin:6px 0 14px; padding:10px 16px; border-left:4px solid var(--accent-purple); background:rgba(124,58,237,0.06); display:flex; gap:14px; align-items:baseline; flex-wrap:wrap;">
+    <span style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.14em; color:var(--accent-purple); font-weight:700; flex-shrink:0;">Question</span>
+    <span style="font-size:1.15rem; color:var(--brand-navy); font-style:italic;">&ldquo;How do I save the result of the last action call &mdash; and track its pending state &mdash; without piling up <code class="inline-code">useState</code>?&rdquo;</span>
+  </div>
+  <h1 style="margin-bottom:6px;">useActionState</h1>
+  <p class="text-secondary" style="font-size:1.15rem; margin-bottom:18px;">Manages the full lifecycle of a form action: previous state, current result, pending state</p>
   <div class="signature">
     <span class="kw">const</span> [<span class="param">state</span>, <span class="param">formAction</span>, <span class="param">isPending</span>] = <span class="fn">useActionState</span>(<span class="param">fn</span>, <span class="param">initialState</span>)
   </div>
@@ -1053,42 +1011,51 @@ tr:last-child td { border-bottom: none; }
   <span class="badge p2">Data</span>
   <h2 style="margin-bottom:12px;">useActionState in Practice</h2>
   <pre class="code-block small"><code><span class="kw">function</span> <span class="fn">ChangeName</span>() {
-  <span class="kw">const</span> [<span class="param">error</span>, <span class="param">submitAction</span>, <span class="param">isPending</span>] = <span class="fn">useActionState</span>(
-    <span class="kw">async</span> (<span class="param">previousState</span>, <span class="param">formData</span>) =&gt; {
-      <span class="kw">const</span> <span class="param">error</span> = <span class="kw">await</span> <span class="fn">updateName</span>(<span class="param">formData</span>.<span class="fn">get</span>(<span class="str">"name"</span>));
-      <span class="kw">if</span> (<span class="param">error</span>) <span class="kw">return</span> <span class="param">error</span>;
-      <span class="fn">redirect</span>(<span class="str">"/path"</span>);
-      <span class="kw">return</span> <span class="kw">null</span>;
-    },
-    <span class="kw">null</span>,
-  );
+  <span class="cm">// 1. Define the action &mdash; gets (previousState, formData)</span>
+  <span class="kw">const</span> <span class="fn">updateAction</span> = <span class="kw">async</span> (<span class="param">previousState</span>, <span class="param">formData</span>) =&gt; {
+    <span class="kw">const</span> <span class="param">error</span> = <span class="kw">await</span> <span class="fn">updateName</span>(<span class="param">formData</span>.<span class="fn">get</span>(<span class="str">"name"</span>));
+    <span class="kw">if</span> (<span class="param">error</span>) <span class="kw">return</span> <span class="param">error</span>;   <span class="cm">// &larr; becomes the new state</span>
+    <span class="fn">redirect</span>(<span class="str">"/path"</span>);
+    <span class="kw">return</span> <span class="kw">null</span>;                <span class="cm">// success &mdash; clears state</span>
+  };
+
+  <span class="cm">// 2. Hand it to the hook &mdash; get [last result, wrapped action, pending]</span>
+  <span class="kw">const</span> [<span class="param">error</span>, <span class="param">submitAction</span>, <span class="param">isPending</span>] = <span class="fn">useActionState</span>(<span class="param">updateAction</span>, <span class="kw">null</span>);
 
   <span class="kw">return</span> (
-    <span class="tag">&lt;form</span> <span class="attr">action</span>={<span class="param">submitAction</span>}<span class="tag">&gt;</span>
+    <span class="tag">&lt;form</span> <span class="attr">action</span>={<span class="param">submitAction</span>}<span class="tag">&gt;</span>     <span class="cm">// wrapped action, not raw fn</span>
       <span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="str">"text"</span> <span class="attr">name</span>=<span class="str">"name"</span> <span class="tag">/&gt;</span>
-      <span class="tag">&lt;button</span> <span class="attr">disabled</span>={<span class="param">isPending</span>}<span class="tag">&gt;</span>Update<span class="tag">&lt;/button&gt;</span>
-      {<span class="param">error</span> &amp;&amp; <span class="tag">&lt;p&gt;</span>{<span class="param">error</span>}<span class="tag">&lt;/p&gt;</span>}
+      <span class="tag">&lt;button</span> <span class="attr">disabled</span>={<span class="param">isPending</span>}<span class="tag">&gt;</span>Update<span class="tag">&lt;/button&gt;</span>  <span class="cm">// auto pending</span>
+      {<span class="param">error</span> &amp;&amp; <span class="tag">&lt;p&gt;</span>{<span class="param">error</span>}<span class="tag">&lt;/p&gt;</span>}     <span class="cm">// auto state from hook</span>
     <span class="tag">&lt;/form&gt;</span>
   );
 }</code></pre>
+  <div class="text-secondary mt-16" style="font-size:1.05rem;">No <code class="inline-code">useState</code>, no <code class="inline-code">try/catch</code>, no manual pending toggle &mdash; just <code class="inline-code">return</code> values from the action.</div>
 </section>
 
 <!-- ==================== SLIDE 28: useFormStatus ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
-  <h1>useFormStatus</h1>
-  <p class="text-secondary" style="font-size:1.2rem; margin-bottom:16px;">Read the parent form's submission state from any child component &mdash; no prop drilling</p>
-  <div class="signature mb-16">
-    <span class="kw">const</span> { <span class="param">pending</span> } = <span class="fn">useFormStatus</span>()
+  <div style="margin:6px 0 14px; padding:10px 16px; border-left:4px solid var(--accent-purple); background:rgba(124,58,237,0.06); display:flex; gap:14px; align-items:baseline; flex-wrap:wrap;">
+    <span style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.14em; color:var(--accent-purple); font-weight:700; flex-shrink:0;">Question</span>
+    <span style="font-size:1.15rem; color:var(--brand-navy); font-style:italic;">&ldquo;How does a child component inside a form know that the form is currently submitting &mdash; without prop drilling?&rdquo;</span>
   </div>
-  <pre class="code-block" style="margin-top:24px;"><code><span class="kw">function</span> <span class="fn">SubmitButton</span>() {
-  <span class="kw">const</span> { <span class="param">pending</span> } = <span class="fn">useFormStatus</span>();
+  <h1 style="margin-bottom:6px;">useFormStatus</h1>
+  <p class="text-secondary" style="font-size:1.1rem; margin-bottom:12px;">Read the parent form's submission state from any child component &mdash; no prop drilling</p>
+  <pre class="code-block" style="margin-top:8px; font-size:0.95rem; line-height:1.55;"><code><span class="kw">function</span> <span class="fn">SubmitButton</span>() {
+  <span class="kw">const</span> { <span class="param">pending</span> } = <span class="fn">useFormStatus</span>();   <span class="cm">// reads nearest parent &lt;form&gt;</span>
   <span class="kw">return</span> (
     <span class="tag">&lt;button</span> <span class="attr">type</span>=<span class="str">"submit"</span> <span class="attr">disabled</span>={<span class="param">pending</span>}<span class="tag">&gt;</span>
       {<span class="param">pending</span> ? <span class="str">"Saving..."</span> : <span class="str">"Save"</span>}
     <span class="tag">&lt;/button&gt;</span>
   );
-}</code></pre>
+}
+
+<span class="cm">// Usage &mdash; drop it inside any &lt;form&gt;, no props needed:</span>
+<span class="tag">&lt;form</span> <span class="attr">action</span>={<span class="param">updateAction</span>}<span class="tag">&gt;</span>
+  <span class="tag">&lt;input</span> <span class="attr">name</span>=<span class="str">"name"</span> <span class="tag">/&gt;</span>
+  <span class="tag">&lt;SubmitButton</span> <span class="tag">/&gt;</span>
+<span class="tag">&lt;/form&gt;</span></code></pre>
   <div style="margin-top:20px; display:flex; gap:16px; font-size:1.05rem; flex-wrap:wrap;">
     <div class="card" style="flex:1; min-width:220px; padding:12px 16px;">
       <span class="text-purple">Why</span> <span class="text-secondary">&mdash; Without it, you must pass <code class="inline-code">isPending</code> as a prop from every parent form to every submit button</span>
@@ -1102,8 +1069,12 @@ tr:last-child td { border-bottom: none; }
 <!-- ==================== SLIDE 29: useOptimistic — EXPLANATION ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
-  <h1>useOptimistic</h1>
-  <p class="text-secondary" style="font-size:1.2rem; margin-bottom:16px;">Update the UI instantly while waiting for the server response</p>
+  <div style="margin:6px 0 14px; padding:10px 16px; border-left:4px solid var(--accent-purple); background:rgba(124,58,237,0.06); display:flex; gap:14px; align-items:baseline; flex-wrap:wrap;">
+    <span style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.14em; color:var(--accent-purple); font-weight:700; flex-shrink:0;">Question</span>
+    <span style="font-size:1.15rem; color:var(--brand-navy); font-style:italic;">&ldquo;How do I show the new state to the user immediately &mdash; before the server actually replies?&rdquo;</span>
+  </div>
+  <h1 style="margin-bottom:6px;">useOptimistic</h1>
+  <p class="text-secondary" style="font-size:1.15rem; margin-bottom:14px;">Update the UI instantly while waiting for the server response</p>
   <div class="signature mb-16">
     <span class="kw">const</span> [<span class="param">optimistic</span>, <span class="param">addOptimistic</span>] = <span class="fn">useOptimistic</span>(<span class="param">state</span>, <span class="param">updateFn</span>)
   </div>
@@ -1132,156 +1103,79 @@ tr:last-child td { border-bottom: none; }
 <section class="slide code-slide" data-presenter="p2">
   <span class="badge p2">Data</span>
   <h2 style="margin-bottom:16px;">useOptimistic in Practice</h2>
-  <pre class="code-block"><code><span class="kw">const</span> [<span class="param">optimisticMessages</span>, <span class="param">addOptimisticMessage</span>] = <span class="fn">useOptimistic</span>(
-  <span class="param">messages</span>,
-  (<span class="param">state</span>, <span class="param">newMessage</span>) =&gt; [
-    ...<span class="param">state</span>,
-    { <span class="attr">text</span>: <span class="param">newMessage</span>, <span class="attr">sending</span>: <span class="kw">true</span> }
-  ]
-);
+  <pre class="code-block"><code><span class="cm">// 1. Define the merge function &mdash; (currentState, newValue) =&gt; nextState</span>
+<span class="kw">const</span> <span class="fn">addPending</span> = (<span class="param">state</span>, <span class="param">newMessage</span>) =&gt; [
+  ...<span class="param">state</span>,
+  { <span class="attr">text</span>: <span class="param">newMessage</span>, <span class="attr">sending</span>: <span class="kw">true</span> }   <span class="cm">// flag: show as "in flight"</span>
+];
 
-<span class="cm">// In the form action:</span>
+<span class="cm">// 2. Hand it to the hook with the real state</span>
+<span class="kw">const</span> [<span class="param">optimisticMessages</span>, <span class="param">addOptimisticMessage</span>] = <span class="fn">useOptimistic</span>(<span class="param">messages</span>, <span class="param">addPending</span>);
+
+<span class="cm">// 3. In the form action:</span>
 <span class="kw">async function</span> <span class="fn">sendMessage</span>(<span class="param">formData</span>) {
   <span class="kw">const</span> <span class="param">message</span> = <span class="param">formData</span>.<span class="fn">get</span>(<span class="str">"message"</span>);
-  <span class="fn">addOptimisticMessage</span>(<span class="param">message</span>);  <span class="cm">// UI updates instantly</span>
-  <span class="kw">await</span> <span class="fn">deliverMessage</span>(<span class="param">message</span>); <span class="cm">// Server call</span>
+  <span class="fn">addOptimisticMessage</span>(<span class="param">message</span>);   <span class="cm">// UI updates instantly</span>
+  <span class="kw">await</span> <span class="fn">deliverMessage</span>(<span class="param">message</span>);  <span class="cm">// real server call &mdash; auto-merge or revert</span>
 }</code></pre>
   <div style="margin-top:20px; font-size:1.1rem; color:var(--text-secondary);">
     Demo tip: Add a <code class="inline-code">setTimeout(resolve, 2000)</code> to exaggerate the delay &mdash; shows the instant update vs real data arriving.
   </div>
 </section>
 
-<!-- ==================== SLIDE 31: THREE HOOKS TOGETHER ==================== -->
+<!-- ==================== SLIDE 31: THREE HOOKS TOGETHER — SCHEMA + REAL CODE ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
-  <h2>All Three Hooks Together</h2>
-  <p class="text-secondary mb-16" style="font-size:1.15rem;">How they compose in a single form</p>
-  <div style="display:flex; gap:20px; align-items:stretch; margin-top:8px;">
-    <div class="card" style="flex:1; border-left:3px solid var(--accent-react);">
-      <h3 style="color:var(--accent-react);">useActionState</h3>
-      <p style="font-size:1.05rem;">Manages form state &amp; submission logic</p>
-      <div style="margin-top:12px; font-family:var(--font-code); font-size:0.9rem; color:var(--text-secondary);">[state, action, isPending]</div>
-    </div>
-    <div style="display:flex; align-items:center; font-size:1.5rem; color:var(--text-secondary);">+</div>
-    <div class="card" style="flex:1; border-left:3px solid var(--accent-purple);">
-      <h3 style="color:var(--accent-purple);">useFormStatus</h3>
-      <p style="font-size:1.05rem;">Reads pending state in child components</p>
-      <div style="margin-top:12px; font-family:var(--font-code); font-size:0.9rem; color:var(--text-secondary);">{ pending }</div>
-    </div>
-    <div style="display:flex; align-items:center; font-size:1.5rem; color:var(--text-secondary);">+</div>
-    <div class="card" style="flex:1; border-left:3px solid var(--accent-green);">
-      <h3 style="color:var(--accent-green);">useOptimistic</h3>
-      <p style="font-size:1.05rem;">Instant UI feedback before server responds</p>
-      <div style="margin-top:12px; font-family:var(--font-code); font-size:0.9rem; color:var(--text-secondary);">[optimistic, addOptimistic]</div>
-    </div>
-  </div>
-  <div class="takeaway" style="margin-top:32px; font-size:1.3rem; max-width:100%;">
-    Together, they replace the entire <code class="inline-code">useState</code> + <code class="inline-code">useEffect</code> + <code class="inline-code">onSubmit</code> pattern for forms.
-  </div>
-</section>
+  <h2 style="margin-bottom:4px;">Action + 3 Hooks &mdash; Together</h2>
+  <p class="text-secondary" style="font-size:1rem; margin-bottom:12px;">Where each hook lives &middot; how they compose in real code</p>
 
-<!-- ==================== SLIDE 32: FORM HOOKS RECAP ==================== -->
-<section class="slide" data-presenter="p2">
-  <span class="badge p2">Data</span>
-  <h2>Form Hooks &mdash; One-Liner Recap</h2>
-  <div style="display:flex; flex-direction:column; gap:24px; margin-top:24px; max-width:90%;">
-    <div style="display:flex; gap:20px; align-items:baseline;">
-      <code class="inline-code" style="min-width:220px; font-size:1.2rem; text-align:center;">useActionState</code>
-      <span style="font-size:1.3rem;">"Form state without <code class="inline-code">useState</code>"</span>
-    </div>
-    <div style="display:flex; gap:20px; align-items:baseline;">
-      <code class="inline-code" style="min-width:220px; font-size:1.2rem; text-align:center;">useFormStatus</code>
-      <span style="font-size:1.3rem;">"Pending state without prop drilling"</span>
-    </div>
-    <div style="display:flex; gap:20px; align-items:baseline;">
-      <code class="inline-code" style="min-width:220px; font-size:1.2rem; text-align:center;">useOptimistic</code>
-      <span style="font-size:1.3rem;">"Instant feedback for better UX"</span>
-    </div>
-  </div>
-</section>
+  <div style="display:grid; grid-template-columns: 1fr 1.15fr; gap:16px;">
+    <pre class="code-block" style="font-size:0.85rem; line-height:1.7; padding:14px 18px; margin:0;"><code><span class="tag">&lt;form</span> <span class="attr">action</span>={<span class="param">action</span>}<span class="tag">&gt;</span>
+   <span style="color:var(--accent-react); font-weight:700;">&#9650;</span>
+   <span style="color:var(--accent-react); font-weight:700;">&#9492;&#9472;</span> <span style="color:var(--accent-react); font-weight:700;">useActionState</span>
+      <span style="color:var(--text-secondary); font-style:italic;">spine: state + action + isPending</span>
 
-<!-- ==================== SLIDE 33: DIVIDER — USE HOOK ==================== -->
-<section class="slide divider-slide" data-presenter="p2">
-  <div style="font-size:1rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--accent-purple); margin-bottom:16px;">Section</div>
-  <div class="section-title">The <code style="font-family:var(--font-code); color:var(--accent-react);">use</code> Hook</div>
-  <div class="divider-accent" style="background:var(--accent-purple);"></div>
-  <div class="section-subtitle">Read promises and context anywhere in your component</div>
-</section>
+  <span class="tag">&lt;ul&gt;</span>{<span class="param">optimistic</span>.<span class="fn">map</span>(...)}<span class="tag">&lt;/ul&gt;</span>
+   <span style="color:var(--accent-green); font-weight:700;">&#9650;</span>
+   <span style="color:var(--accent-green); font-weight:700;">&#9492;&#9472;</span> <span style="color:var(--accent-green); font-weight:700;">useOptimistic</span>
+      <span style="color:var(--text-secondary); font-style:italic;">instant UI before server</span>
 
-<!-- ==================== SLIDE 34: use(promise) ==================== -->
-<section class="slide code-slide" data-presenter="p2">
-  <span class="badge p2">Data</span>
-  <h2 style="margin-bottom:4px;">use(promise) &mdash; Reading Promises</h2>
-  <p class="text-secondary mb-16" style="font-size:1.1rem;">Read async data directly in render. Integrates with Suspense for loading and ErrorBoundary for errors.</p>
-  <pre class="code-block"><code><span class="kw">import</span> { <span class="fn">use</span>, <span class="fn">Suspense</span> } <span class="kw">from</span> <span class="str">'react'</span>;
+  <span class="tag">&lt;input</span> <span class="tag">/&gt;</span>
+  <span class="tag">&lt;SubmitButton</span> <span class="tag">/&gt;</span>
+                  <span style="color:var(--accent-purple); font-weight:700;">&#9650;</span>
+                  <span style="color:var(--accent-purple); font-weight:700;">&#9492;&#9472;</span> <span style="color:var(--accent-purple); font-weight:700;">useFormStatus</span>
+                     <span style="color:var(--text-secondary); font-style:italic;">pending in child</span>
+<span class="tag">&lt;/form&gt;</span></code></pre>
 
-<span class="kw">function</span> <span class="fn">Message</span>({ <span class="param">messagePromise</span> }) {
-  <span class="kw">const</span> <span class="param">content</span> = <span class="fn">use</span>(<span class="param">messagePromise</span>);
-  <span class="kw">return</span> <span class="tag">&lt;p&gt;</span>Here is the message: {<span class="param">content</span>}<span class="tag">&lt;/p&gt;</span>;
-}
+    <pre class="code-block" style="font-size:0.8rem; line-height:1.5; padding:14px 18px; margin:0;"><code><span class="kw">function</span> <span class="fn">MessageForm</span>({ <span class="param">messages</span> }) {
+  <span class="kw">const</span> [<span class="param">optimistic</span>, <span class="param">addOptimistic</span>] = <span class="fn">useOptimistic</span>(<span class="param">messages</span>, <span class="param">addPending</span>);
 
-<span class="cm">// Usage with Suspense</span>
-<span class="tag">&lt;Suspense</span> <span class="attr">fallback</span>={<span class="tag">&lt;p&gt;</span>Loading...<span class="tag">&lt;/p&gt;</span>}<span class="tag">&gt;</span>
-  <span class="tag">&lt;Message</span> <span class="attr">messagePromise</span>={<span class="fn">fetchMessage</span>()} <span class="tag">/&gt;</span>
-<span class="tag">&lt;/Suspense&gt;</span></code></pre>
-  <div style="margin-top:16px; display:flex; gap:16px; font-size:1.05rem; flex-wrap:wrap;">
-    <div class="card" style="flex:1; min-width:200px; padding:12px 16px; border-left:3px solid var(--accent-orange);">
-      <span class="text-orange">Replaces</span> <span class="text-secondary">&mdash; <code class="inline-code">useEffect</code> + <code class="inline-code">useState</code> + loading/error booleans for data fetching</span>
-    </div>
-    <div class="card" style="flex:1; min-width:200px; padding:12px 16px; border-left:3px solid var(--accent-green);">
-      <span class="text-green">Reach for it when</span> <span class="text-secondary">&mdash; data passed as a promise from parent, conditional async reads, Suspense-first architecture</span>
-    </div>
-    <div class="card" style="flex:1; min-width:200px; padding:12px 16px; border-left:3px solid var(--accent-react);">
-      <span class="text-react">Avoid</span> <span class="text-secondary">&mdash; don't create promises inside render &mdash; pass them as props or lift to a parent</span>
-    </div>
-  </div>
-</section>
+  <span class="cm">// The Action &mdash; plain async fn (the foundation)</span>
+  <span class="kw">const</span> <span class="fn">sendAction</span> = <span class="kw">async</span> (<span class="param">prev</span>, <span class="param">formData</span>) =&gt; {
+    <span class="kw">const</span> <span class="param">text</span> = <span class="param">formData</span>.<span class="fn">get</span>(<span class="str">"message"</span>);
+    <span class="fn">addOptimistic</span>(<span class="param">text</span>);                  <span class="cm">// show instantly</span>
+    <span class="kw">return</span> <span class="kw">await</span> <span class="fn">deliverMessage</span>(<span class="param">text</span>);   <span class="cm">// real server call</span>
+  };
 
-<!-- ==================== SLIDE 35: use(Context) ==================== -->
-<section class="slide" data-presenter="p2">
-  <span class="badge p2">Data</span>
-  <h2>use(Context) &mdash; Conditional Context</h2>
-  <p class="text-secondary" style="font-size:1.2rem; margin-bottom:20px;">The key differentiator: <code class="inline-code">use</code> is NOT bound by the Rules of Hooks</p>
-  <div class="two-col">
-    <div>
-      <h3 style="color:var(--accent-orange);">useContext</h3>
-      <ul class="orange" style="font-size:1.2rem;">
-        <li>Must be at the top level</li>
-        <li>Cannot be inside <code class="inline-code">if</code> / loops</li>
-        <li>Cannot be after early returns</li>
-      </ul>
-    </div>
-    <div>
-      <h3 style="color:var(--accent-green);">use</h3>
-      <ul class="green" style="font-size:1.2rem;">
-        <li>Can be called in conditionals</li>
-        <li>Can be called in loops</li>
-        <li>Can be called after early returns</li>
-      </ul>
-    </div>
-  </div>
-  <pre class="code-block" style="margin-top:24px;"><code><span class="kw">function</span> <span class="fn">HorizontalRule</span>({ <span class="param">show</span> }) {
-  <span class="kw">if</span> (<span class="param">show</span>) {
-    <span class="kw">const</span> <span class="param">theme</span> = <span class="fn">use</span>(<span class="fn">ThemeContext</span>);  <span class="cm">// This is valid!</span>
-    <span class="kw">return</span> <span class="tag">&lt;hr</span> <span class="attr">style</span>={{ <span class="attr">color</span>: <span class="param">theme</span>.color }} <span class="tag">/&gt;</span>;
-  }
-  <span class="kw">return</span> <span class="kw">false</span>;
+  <span class="kw">const</span> [<span class="param">error</span>, <span class="param">action</span>, <span class="param">isPending</span>] = <span class="fn">useActionState</span>(<span class="param">sendAction</span>, <span class="kw">null</span>);
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;form</span> <span class="attr">action</span>={<span class="param">action</span>}<span class="tag">&gt;</span>
+      <span class="tag">&lt;ul&gt;</span>{<span class="param">optimistic</span>.<span class="fn">map</span>(<span class="param">m</span> =&gt; <span class="tag">&lt;li&gt;</span>{<span class="param">m</span>.<span class="param">text</span>}<span class="tag">&lt;/li&gt;</span>)}<span class="tag">&lt;/ul&gt;</span>
+      <span class="tag">&lt;input</span> <span class="attr">name</span>=<span class="str">"message"</span> <span class="tag">/&gt;</span>
+      <span class="tag">&lt;SubmitButton</span> <span class="tag">/&gt;</span>
+    <span class="tag">&lt;/form&gt;</span>
+  );
 }</code></pre>
+  </div>
+
+  <ul style="margin-top:16px; font-size:1.05rem; line-height:1.7;">
+    <li><strong style="color:var(--brand-navy);">Built on Action</strong> &mdash; <code class="inline-code">&lt;form action={asyncFn}&gt;</code> is the foundation; the 3 hooks just layer on top.</li>
+    <li><strong style="color:var(--accent-green);">Together they replace</strong> the entire <code class="inline-code">useState</code> + <code class="inline-code">useEffect</code> + <code class="inline-code">onSubmit</code> pattern for forms.</li>
+  </ul>
 </section>
 
-<!-- ==================== SLIDE 36: USE HOOK — KEY TAKEAWAY ==================== -->
-<section class="slide" data-presenter="p2" style="align-items:center;">
-  <span class="badge p2">Data</span>
-  <div class="takeaway" style="text-align:center; font-size:2.2rem; max-width:90%;">
-    "<code style="font-family:var(--font-code);">use</code> is the Swiss Army knife &mdash;<br>read any async resource or context,<br>anywhere in your component."
-  </div>
-  <div style="margin-top:40px; display:flex; gap:32px; font-size:1.2rem;">
-    <div><span class="text-react">use(promise)</span> <span class="text-secondary">&mdash; async data</span></div>
-    <div><span class="text-react">use(context)</span> <span class="text-secondary">&mdash; conditional reads</span></div>
-  </div>
-</section>
-
-<!-- ==================== SLIDE 37: DIVIDER — SERVER ==================== -->
+<!-- ==================== SLIDE 30: DIVIDER — SERVER ==================== -->
 <section class="slide divider-slide" data-presenter="p2">
   <div style="font-size:1rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--accent-purple); margin-bottom:16px;">Section</div>
   <div class="section-title">Server Components<br>&amp; Server Actions</div>
@@ -1289,31 +1183,69 @@ tr:last-child td { border-bottom: none; }
   <div class="section-subtitle">Stabilized in React 19 &mdash; full-stack React</div>
 </section>
 
-<!-- ==================== SLIDE 38: SERVER COMPONENTS ==================== -->
+<!-- ==================== SLIDE 31: SERVER COMPONENTS ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
-  <h1>Server Components</h1>
-  <p class="text-secondary" style="font-size:1.15rem; margin-bottom:20px;">Components that run exclusively on the server &mdash; stabilized in React 19</p>
-  <div class="feature-grid">
-    <div class="card">
-      <h3>Zero Client JS</h3>
-      <p>Never shipped to the client bundle</p>
+  <h1 style="margin-bottom:6px;">Server Components</h1>
+  <p class="text-secondary" style="font-size:1.2rem; margin-bottom:18px;">Components that run exclusively on the server &mdash; stabilized in React 19</p>
+
+  <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:14px;">
+    <div class="card" style="padding:14px 18px;">
+      <h3 style="font-size:1.15rem; margin-bottom:6px;">Zero Client JS</h3>
+      <p style="font-size:1rem;">Never shipped to the client bundle</p>
     </div>
-    <div class="card">
-      <h3>Direct Data Access</h3>
-      <p>Access databases, file systems, server-only APIs</p>
+    <div class="card" style="padding:14px 18px;">
+      <h3 style="font-size:1.15rem; margin-bottom:6px;">Direct Data Access</h3>
+      <p style="font-size:1rem;">Databases, files, server-only APIs</p>
     </div>
-    <div class="card">
-      <h3>Better Performance</h3>
-      <p>Smaller bundles, faster initial load, streamed HTML</p>
+    <div class="card" style="padding:14px 18px;">
+      <h3 style="font-size:1.15rem; margin-bottom:6px;">Better Performance</h3>
+      <p style="font-size:1rem;">Smaller bundles, streamed HTML</p>
     </div>
-    <div class="card">
-      <h3>SEO Friendly</h3>
-      <p>HTML rendered on server before client JS loads</p>
+    <div class="card" style="padding:14px 18px;">
+      <h3 style="font-size:1.15rem; margin-bottom:6px;">SEO Friendly</h3>
+      <p style="font-size:1rem;">HTML before client JS loads</p>
     </div>
   </div>
-  <div style="margin-top:28px; padding:16px 24px; background:var(--bg-code); border-radius:8px; font-size:1.15rem;">
-    <span class="text-react">Boundary:</span> <code class="inline-code">"use client"</code> directive marks where client components begin
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:18px;">
+    <div class="card" style="padding:14px 20px; border-left:4px solid var(--accent-react);">
+      <h3 style="color:var(--accent-react); font-size:1.2rem; margin-bottom:8px;"><code class="inline-code">"use client"</code> &mdash; the boundary</h3>
+      <ul style="font-size:1.05rem; line-height:1.65; margin:0; padding-left:22px;">
+        <li>First line of file &mdash; marks Client Component</li>
+        <li>Without it = Server Component (default)</li>
+        <li>Server can import Client &mdash; <strong>not the reverse</strong> (bridge via props/children)</li>
+      </ul>
+    </div>
+    <div class="card" style="padding:14px 20px; border-left:4px solid var(--accent-orange);">
+      <h3 style="color:var(--accent-orange); font-size:1.2rem; margin-bottom:8px;">Server Components can't use</h3>
+      <ul style="font-size:1.05rem; line-height:1.65; margin:0; padding-left:22px;">
+        <li><code class="inline-code">useState</code>, <code class="inline-code">useEffect</code>, <code class="inline-code">useRef</code></li>
+        <li>Event handlers (<code class="inline-code">onClick</code>, etc.)</li>
+        <li>Rendered once on server &mdash; not "alive" in browser</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:18px;">
+    <div class="card" style="padding:14px 20px; border-left:4px solid var(--accent-green);">
+      <h3 style="color:var(--accent-green); font-size:1.2rem; margin-bottom:8px;">Client Component &rarr; when to use</h3>
+      <ul style="font-size:1.05rem; line-height:1.6; margin:0; padding-left:22px;">
+        <li>Forms &amp; inputs</li>
+        <li>Like / favorite buttons</li>
+        <li>Modals, dropdowns, tooltips</li>
+        <li>Anything with animations or local state</li>
+      </ul>
+    </div>
+    <div class="card" style="padding:14px 20px; border-left:4px solid var(--brand-navy);">
+      <h3 style="color:var(--brand-navy); font-size:1.2rem; margin-bottom:8px;">Server Component &rarr; when to use</h3>
+      <ul style="font-size:1.05rem; line-height:1.6; margin:0; padding-left:22px;">
+        <li>Product pages, blog posts</li>
+        <li>Dashboards (data-heavy)</li>
+        <li>Catalog &amp; listing pages</li>
+        <li>Layout shells &amp; navigation</li>
+      </ul>
+    </div>
   </div>
 </section>
 
@@ -1322,16 +1254,17 @@ tr:last-child td { border-bottom: none; }
   <span class="badge p2">Data</span>
   <h2 style="margin-bottom:4px;">Server Components &mdash; In Practice</h2>
   <p class="text-secondary mb-16" style="font-size:1.1rem;">No useState, no useEffect, no client bundle cost &mdash; just async rendering</p>
-  <pre class="code-block"><code><span class="cm">// This component never ships JS to the browser</span>
-<span class="kw">async function</span> <span class="fn">ProductPage</span>({ <span class="param">id</span> }) {
+  <pre class="code-block"><code><span class="cm">// Never ships JS to the browser &mdash; runs once on server</span>
+<span class="kw">async function</span> <span class="fn">ProductPage</span>({ <span class="param">id</span> }) {       <span class="cm">// &larr; async component (new!)</span>
   <span class="kw">const</span> <span class="param">product</span> = <span class="kw">await</span> <span class="param">db</span>.products.<span class="fn">findUnique</span>({ <span class="attr">where</span>: { <span class="param">id</span> } });
   <span class="kw">const</span> <span class="param">reviews</span> = <span class="kw">await</span> <span class="param">db</span>.reviews.<span class="fn">findMany</span>({ <span class="attr">where</span>: { <span class="attr">productId</span>: <span class="param">id</span> } });
+  <span class="cm">// &uarr; direct DB access &mdash; no fetch, no API route, no useEffect</span>
 
   <span class="kw">return</span> (
     <span class="tag">&lt;main&gt;</span>
       <span class="tag">&lt;h1&gt;</span>{<span class="param">product</span>.name}<span class="tag">&lt;/h1&gt;</span>
       <span class="tag">&lt;p&gt;</span>{<span class="param">product</span>.description}<span class="tag">&lt;/p&gt;</span>
-      <span class="tag">&lt;AddToCartButton</span> <span class="attr">id</span>={<span class="param">id</span>} <span class="tag">/&gt;</span>  <span class="cm">{/* Client Component */}</span>
+      <span class="tag">&lt;AddToCartButton</span> <span class="attr">id</span>={<span class="param">id</span>} <span class="tag">/&gt;</span>  <span class="cm">{/* Client Component &mdash; "use client" inside */}</span>
       <span class="tag">&lt;ReviewList</span> <span class="attr">reviews</span>={<span class="param">reviews</span>} <span class="tag">/&gt;</span>
     <span class="tag">&lt;/main&gt;</span>
   );
@@ -1349,73 +1282,257 @@ tr:last-child td { border-bottom: none; }
 <!-- ==================== SLIDE 40: SERVER ACTIONS — EXPLANATION ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
-  <h1>Server Actions</h1>
-  <ul style="font-size:1.3rem; margin-top:16px;">
-    <li>Async functions marked with <code class="inline-code">"use server"</code> that run on the server</li>
-    <li>Callable from client components &mdash; the framework creates a network endpoint behind the scenes</li>
-    <li>Tightly integrates with <code class="inline-code">&lt;form action={...}&gt;</code> for data mutations</li>
-    <li>Replaces custom REST/GraphQL endpoints for many common cases</li>
+  <h1 style="margin-bottom:6px;">Server Actions</h1>
+  <p class="text-secondary" style="font-size:1.1rem; margin-bottom:14px;">Functions you write locally that <strong>execute on the server</strong> &mdash; no manual API layer. <em>Think: RPC for React.</em></p>
+  <ul style="font-size:1.1rem; line-height:1.7; margin:0;">
+    <li><code class="inline-code">"use server"</code> directive marks an <code class="inline-code">async</code> function as server-only</li>
+    <li>Import &amp; call from a Client Component &mdash; framework wires the network call <strong>behind the scenes</strong></li>
+    <li>Plugs into <code class="inline-code">&lt;form action={serverFn}&gt;</code> for mutations</li>
+    <li>Replaces custom <code class="inline-code">REST</code> / <code class="inline-code">GraphQL</code> endpoints for common CRUD</li>
   </ul>
-  <div style="margin-top:32px; display:flex; gap:24px;">
-    <div class="card" style="flex:1;">
-      <h3>Think of it as</h3>
-      <p>RPC for React &mdash; call server functions as if they were local</p>
+
+  <div style="margin-top:16px; padding:14px 22px; background:rgba(124,58,237,0.05); border-left:4px solid var(--accent-purple); border-radius:0 8px 8px 0;">
+    <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.14em; color:var(--accent-purple); font-weight:700; margin-bottom:10px;">Behind the scenes &mdash; the magic</div>
+    <div style="display:grid; grid-template-columns: 1.05fr 1fr; gap:24px; align-items:start;">
+      <pre style="margin:0; padding:10px 14px; background:var(--bg-code); border-radius:6px; font-size:0.85rem; line-height:1.6; font-family:var(--font-code); overflow:hidden;"><code><span class="dir">"use client"</span>
+<span class="kw">import</span> { <span class="fn">createNote</span> } <span class="kw">from</span> <span class="str">"./actions"</span>;
+
+<span class="kw">function</span> <span class="fn">MyForm</span>() {
+  <span class="kw">return</span> <span class="tag">&lt;button</span> <span class="attr">onClick</span>={() =&gt;
+    <span class="fn">createNote</span>({ <span class="attr">text</span>: <span class="str">"Hello"</span> })
+  }<span class="tag">&gt;</span>Save<span class="tag">&lt;/button&gt;</span>;
+}</code></pre>
+      <ol style="font-size:1rem; line-height:1.65; margin:0; padding-left:22px;">
+        <li>Framework rewrites <code class="inline-code">createNote(...)</code> into a <strong>POST</strong> to a hidden URL like <code class="inline-code">/_action/abc123</code></li>
+        <li>Server receives the request &amp; runs the real function</li>
+        <li>Result is serialized and sent back</li>
+        <li>You get a normal <code class="inline-code">Promise</code> &mdash; as if calling a local function</li>
+      </ol>
     </div>
-    <div class="card" style="flex:1;">
-      <h3>Framework support</h3>
-      <p>Next.js App Router, Remix, and other React frameworks</p>
-    </div>
+  </div>
+
+  <div style="margin-top:12px; font-size:0.95rem; color:var(--text-secondary); text-align:center;">
+    <strong style="color:var(--accent-purple);">Framework support</strong> &mdash; Next.js App Router, Remix / React Router 7, TanStack Start
   </div>
 </section>
 
-<!-- ==================== SLIDE 40: SERVER ACTIONS — CODE ==================== -->
+<!-- ==================== SLIDE 34: PUTTING IT TOGETHER ==================== -->
 <section class="slide code-slide" data-presenter="p2">
   <span class="badge p2">Data</span>
-  <h2 style="margin-bottom:16px;">Server Actions in Practice</h2>
-  <pre class="code-block"><code><span class="cm">// This is a Server Component</span>
-<span class="kw">import</span> <span class="fn">Button</span> <span class="kw">from</span> <span class="str">'./Button'</span>;
+  <h2 style="margin-bottom:4px;">Putting It Together</h2>
+  <p class="text-secondary" style="font-size:1.05rem; margin-bottom:14px;">Server Component + Server Action + Client Component on a single page</p>
 
-<span class="kw">function</span> <span class="fn">EmptyNote</span>() {
-  <span class="kw">async function</span> <span class="fn">createNoteAction</span>() {
-    <span class="dir">'use server'</span>;
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+    <div>
+      <div style="background:rgba(12,30,94,0.08); color:var(--brand-navy); padding:6px 14px; border-radius:6px 6px 0 0; font-size:0.8rem; font-weight:700; letter-spacing:0.05em;">page.jsx &mdash; SERVER COMPONENT (no directive)</div>
+      <pre class="code-block" style="margin:0; padding:14px 18px; font-size:0.85rem; line-height:1.55; border-radius:0 0 8px 8px; border-left:4px solid var(--brand-navy);"><code><span class="kw">async function</span> <span class="fn">NotesPage</span>() {              <span class="cm">// async OK</span>
+  <span class="kw">const</span> <span class="param">notes</span> = <span class="kw">await</span> <span class="param">db</span>.notes.<span class="fn">findMany</span>();    <span class="cm">// direct DB</span>
 
-    <span class="kw">await</span> <span class="param">db</span>.notes.<span class="fn">create</span>();
+  <span class="kw">async function</span> <span class="fn">createNote</span>(<span class="param">formData</span>) {  <span class="cm">// &larr; Server Action</span>
+    <span class="dir">"use server"</span>;
+    <span class="kw">await</span> <span class="param">db</span>.notes.<span class="fn">create</span>({
+      <span class="attr">text</span>: <span class="param">formData</span>.<span class="fn">get</span>(<span class="str">"text"</span>)
+    });
   }
 
-  <span class="kw">return</span> <span class="tag">&lt;Button</span> <span class="attr">onClick</span>={<span class="param">createNoteAction</span>} <span class="tag">/&gt;</span>;
+  <span class="kw">return</span> (
+    <span class="tag">&lt;main&gt;</span>
+      <span class="tag">&lt;ul&gt;</span>{<span class="param">notes</span>.<span class="fn">map</span>(<span class="param">n</span> =&gt; <span class="tag">&lt;li&gt;</span>{<span class="param">n</span>.text}<span class="tag">&lt;/li&gt;</span>)}<span class="tag">&lt;/ul&gt;</span>
+      <span class="tag">&lt;NoteForm</span> <span class="attr">action</span>={<span class="param">createNote</span>} <span class="tag">/&gt;</span>  <span class="cm">// Client Comp</span>
+    <span class="tag">&lt;/main&gt;</span>
+  );
 }</code></pre>
-  <div style="margin-top:24px; display:flex; gap:16px; font-size:1.1rem;">
-    <div class="text-green">&#10003; No API route file</div>
-    <div class="text-green">&#10003; No fetch call</div>
-    <div class="text-green">&#10003; Type-safe end to end</div>
+    </div>
+    <div>
+      <div style="background:rgba(124,58,237,0.08); color:var(--accent-purple); padding:6px 14px; border-radius:6px 6px 0 0; font-size:0.8rem; font-weight:700; letter-spacing:0.05em;">NoteForm.jsx &mdash; CLIENT COMPONENT</div>
+      <pre class="code-block" style="margin:0; padding:14px 18px; font-size:0.85rem; line-height:1.55; border-radius:0 0 8px 8px; border-left:4px solid var(--accent-purple);"><code><span class="dir">"use client"</span>                          <span class="cm">// boundary</span>
+<span class="kw">import</span> { <span class="fn">useFormStatus</span> } <span class="kw">from</span> <span class="str">"react"</span>;
+
+<span class="kw">function</span> <span class="fn">NoteForm</span>({ <span class="param">action</span> }) {        <span class="cm">// receives Server Action via prop</span>
+  <span class="kw">const</span> { <span class="param">pending</span> } = <span class="fn">useFormStatus</span>();   <span class="cm">// hook OK here</span>
+  <span class="kw">return</span> (
+    <span class="tag">&lt;form</span> <span class="attr">action</span>={<span class="param">action</span>}<span class="tag">&gt;</span>           <span class="cm">// fires on submit</span>
+      <span class="tag">&lt;input</span> <span class="attr">name</span>=<span class="str">"text"</span> <span class="tag">/&gt;</span>
+      <span class="tag">&lt;button</span> <span class="attr">disabled</span>={<span class="param">pending</span>}<span class="tag">&gt;</span>
+        {<span class="param">pending</span> ? <span class="str">"Saving..."</span> : <span class="str">"Add"</span>}
+      <span class="tag">&lt;/button&gt;</span>
+    <span class="tag">&lt;/form&gt;</span>
+  );
+}</code></pre>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-top:16px;">
+    <div class="card" style="border-left:4px solid var(--brand-navy); padding:10px 16px;">
+      <h3 style="color:var(--brand-navy); font-size:1rem; margin-bottom:4px;">Server Component</h3>
+      <p style="font-size:0.9rem;">No directive &middot; <code class="inline-code">async</code> OK &middot; direct DB &middot; runs once on server &middot; no hooks/events</p>
+    </div>
+    <div class="card" style="border-left:4px solid var(--accent-green); padding:10px 16px;">
+      <h3 style="color:var(--accent-green); font-size:1rem; margin-bottom:4px;">Server Action</h3>
+      <p style="font-size:0.9rem;"><code class="inline-code">"use server"</code> inside fn &middot; mutates data &middot; callable anywhere &middot; framework wires HTTP</p>
+    </div>
+    <div class="card" style="border-left:4px solid var(--accent-purple); padding:10px 16px;">
+      <h3 style="color:var(--accent-purple); font-size:1rem; margin-bottom:4px;">Client Component</h3>
+      <p style="font-size:0.9rem;"><code class="inline-code">"use client"</code> top of file &middot; uses hooks/events &middot; ships JS to browser</p>
+    </div>
   </div>
 </section>
 
 <!-- ==================== SLIDE 41: SECURITY & PRACTICAL POINTS ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
-  <h2>Server Actions &mdash; Important Points</h2>
-  <div style="display:flex; flex-direction:column; gap:24px; margin-top:20px;">
-    <div class="card" style="border-left:3px solid var(--accent-red);">
-      <h3 style="color:var(--accent-red);">Security Warning</h3>
-      <p style="font-size:1.2rem;">Server Actions are exposed as <strong>public HTTP endpoints</strong>.<br>Always validate inputs and authenticate requests &mdash; treat them like any API route.</p>
+  <h2 style="margin-bottom:16px;">Server Actions &mdash; Important Points</h2>
+  <div style="display:flex; flex-direction:column; gap:16px;">
+    <div class="card" style="border-left:4px solid var(--accent-red); padding:14px 22px;">
+      <h3 style="color:var(--accent-red); font-size:1.25rem; margin-bottom:6px;">&#9888; Security &mdash; they're public HTTP endpoints</h3>
+      <p style="font-size:1.05rem; margin-bottom:8px;">The action looks like a local call, but the framework exposes it at a hidden URL. <strong>Anyone</strong> can hit it with curl. Treat it like any API route.</p>
+      <div style="font-size:1rem; line-height:1.7;"><strong>Always:</strong> &nbsp;
+        <span style="color:var(--accent-red);">&#10003;</span> authenticate the caller &nbsp;
+        <span style="color:var(--accent-red);">&#10003;</span> check ownership/permissions &nbsp;
+        <span style="color:var(--accent-red);">&#10003;</span> validate input shape
+      </div>
     </div>
-    <div class="card" style="border-left:3px solid var(--accent-orange);">
-      <h3 style="color:var(--accent-orange);">Not a Replacement for Everything</h3>
-      <p style="font-size:1.2rem;">Complex APIs still need dedicated endpoints.<br>Server Actions are best for mutations and simple data fetches.</p>
+    <div class="card" style="border-left:4px solid var(--accent-orange); padding:14px 22px;">
+      <h3 style="color:var(--accent-orange); font-size:1.25rem; margin-bottom:6px;">Not a replacement for every API</h3>
+      <p style="font-size:1.05rem;">Best for <strong>your own React app</strong>'s mutations &amp; simple CRUD. Public APIs for mobile apps, third-party integrations, webhooks &mdash; still need a real REST/GraphQL endpoint (stable contract, non-React clients).</p>
     </div>
-    <div class="card" style="border-left:3px solid var(--accent-react);">
-      <h3 style="color:var(--accent-react);">Framework Required</h3>
-      <p style="font-size:1.2rem;">Server Components and Actions need framework infrastructure.<br>Next.js 14+, Remix, or other compatible frameworks.</p>
+    <div class="card" style="border-left:4px solid var(--accent-react); padding:14px 22px;">
+      <h3 style="color:var(--accent-react); font-size:1.25rem; margin-bottom:6px;">Framework required</h3>
+      <p style="font-size:1.05rem;">Server Components &amp; Actions need RSC-aware infrastructure: Next.js App Router, Remix / React Router 7, TanStack Start, Waku. Plain Vite or CRA &mdash; not supported.</p>
     </div>
   </div>
 </section>
 
-<!-- ==================== SLIDE 42: HYDRATION ERROR DIFFS ==================== -->
+<!-- ==================== SLIDE 36: DIVIDER — USE HOOK ==================== -->
+<section class="slide divider-slide" data-presenter="p2">
+  <div style="font-size:1rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--accent-purple); margin-bottom:16px;">Section</div>
+  <div class="section-title">The <code style="font-family:var(--font-code); color:var(--accent-react);">use</code> Hook</div>
+  <div class="divider-accent" style="background:var(--accent-purple);"></div>
+  <div class="section-subtitle">Read promises and context anywhere in your component</div>
+</section>
+
+<!-- ==================== SLIDE 37: use(promise) ==================== -->
+<section class="slide code-slide" data-presenter="p2">
+  <span class="badge p2">Data</span>
+  <h2 style="margin-bottom:4px;">use(promise) &mdash; Reading Promises</h2>
+  <p class="text-secondary" style="font-size:1.05rem; margin-bottom:14px;">The bridge: Server Component starts the promise, Client Component unwraps it &mdash; streaming SSR for free</p>
+
+  <pre class="code-block" style="font-size:0.9rem; line-height:1.6; padding:16px 22px;"><code><span class="cm">// Server Component &mdash; starts the promise (no await!)</span>
+<span class="kw">async function</span> <span class="fn">Page</span>() {
+  <span class="kw">const</span> <span class="param">messagePromise</span> = <span class="fn">fetchMessage</span>();
+  <span class="kw">return</span> (
+    <span class="tag">&lt;Suspense</span> <span class="attr">fallback</span>={<span class="tag">&lt;p&gt;</span>Loading...<span class="tag">&lt;/p&gt;</span>}<span class="tag">&gt;</span>
+      <span class="tag">&lt;Message</span> <span class="attr">messagePromise</span>={<span class="param">messagePromise</span>} <span class="tag">/&gt;</span>
+    <span class="tag">&lt;/Suspense&gt;</span>
+  );
+}
+
+<span class="cm">// Client Component &mdash; unwraps it during render</span>
+<span class="dir">"use client"</span>
+<span class="kw">import</span> { <span class="fn">use</span> } <span class="kw">from</span> <span class="str">"react"</span>;
+
+<span class="kw">function</span> <span class="fn">Message</span>({ <span class="param">messagePromise</span> }) {
+  <span class="kw">const</span> <span class="param">content</span> = <span class="fn">use</span>(<span class="param">messagePromise</span>);   <span class="cm">// suspends until resolved</span>
+  <span class="kw">return</span> <span class="tag">&lt;p&gt;</span>{<span class="param">content</span>}<span class="tag">&lt;/p&gt;</span>;
+}</code></pre>
+
+  <div style="margin-top:14px; display:flex; gap:14px; font-size:1rem; flex-wrap:wrap;">
+    <div class="card" style="flex:1; min-width:200px; padding:10px 16px; border-left:4px solid var(--accent-orange);">
+      <span class="text-orange" style="font-weight:600;">Replaces</span> <span class="text-secondary">&mdash; <code class="inline-code">useEffect</code> + <code class="inline-code">useState</code> + loading/error booleans</span>
+    </div>
+    <div class="card" style="flex:1; min-width:200px; padding:10px 16px; border-left:4px solid var(--accent-green);">
+      <span class="text-green" style="font-weight:600;">Reach for it when</span> <span class="text-secondary">&mdash; promise comes as prop, conditional async reads</span>
+    </div>
+    <div class="card" style="flex:1; min-width:200px; padding:10px 16px; border-left:4px solid var(--accent-red);">
+      <span style="color:var(--accent-red); font-weight:600;">Avoid</span> <span class="text-secondary">&mdash; don't create promises inside render (new promise on every re-render &rarr; loop)</span>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 38: use(Context) ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
-  <h1>Hydration Error Improvements</h1>
-  <div class="code-compare" style="margin-top:24px;">
+  <h2 style="margin-bottom:6px;">use(Context) &mdash; Conditional Context</h2>
+  <p class="text-secondary" style="font-size:1.1rem; margin-bottom:18px;">The key differentiator: <code class="inline-code">use</code> is NOT bound by the <strong>Rules of Hooks</strong> &mdash; can be called inside conditionals, loops, or after early returns</p>
+  <div class="two-col" style="gap:24px;">
+    <div>
+      <h3 style="color:var(--accent-orange); font-size:1.3rem;">useContext &mdash; classic hook</h3>
+      <ul class="orange" style="font-size:1.1rem; line-height:1.7;">
+        <li>Must be at the top level</li>
+        <li>Cannot be inside <code class="inline-code">if</code> / loops</li>
+        <li>Cannot be after early returns</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="color:var(--accent-green); font-size:1.3rem;">use &mdash; new in React 19</h3>
+      <ul class="green" style="font-size:1.1rem; line-height:1.7;">
+        <li>Can be called in conditionals</li>
+        <li>Can be called in loops</li>
+        <li>Can be called after early returns</li>
+      </ul>
+    </div>
+  </div>
+  <div class="code-compare" style="margin-top:14px; gap:16px;">
+    <div>
+      <div class="code-label before">useContext &mdash; always reads</div>
+      <pre class="code-block before" style="padding:14px 18px; font-size:0.85rem; line-height:1.55;"><code><span class="kw">function</span> <span class="fn">Header</span>({ <span class="param">user</span> }) {
+  <span class="kw">const</span> <span class="param">theme</span> = <span class="fn">useContext</span>(<span class="fn">ThemeContext</span>);
+  <span class="cm">// &uarr; runs every render, even when</span>
+  <span class="cm">//   we end up not using it</span>
+
+  <span class="kw">if</span> (!<span class="param">user</span>) <span class="kw">return</span> <span class="tag">&lt;Login</span> <span class="tag">/&gt;</span>;
+
+  <span class="kw">return</span> <span class="tag">&lt;h1</span> <span class="attr">style</span>={{ <span class="attr">color</span>: <span class="param">theme</span>.color }}<span class="tag">&gt;</span>
+    {<span class="param">user</span>.name}
+  <span class="tag">&lt;/h1&gt;</span>;
+}</code></pre>
+    </div>
+    <div>
+      <div class="code-label after">use &mdash; read only when needed</div>
+      <pre class="code-block after" style="padding:14px 18px; font-size:0.85rem; line-height:1.55;"><code><span class="kw">function</span> <span class="fn">Header</span>({ <span class="param">user</span> }) {
+  <span class="kw">if</span> (!<span class="param">user</span>) <span class="kw">return</span> <span class="tag">&lt;Login</span> <span class="tag">/&gt;</span>;
+  <span class="cm">// &uarr; early return is fine</span>
+
+  <span class="kw">const</span> <span class="param">theme</span> = <span class="fn">use</span>(<span class="fn">ThemeContext</span>);
+  <span class="cm">// &uarr; reads only if user exists</span>
+
+  <span class="kw">return</span> <span class="tag">&lt;h1</span> <span class="attr">style</span>={{ <span class="attr">color</span>: <span class="param">theme</span>.color }}<span class="tag">&gt;</span>
+    {<span class="param">user</span>.name}
+  <span class="tag">&lt;/h1&gt;</span>;
+}</code></pre>
+    </div>
+  </div>
+  <div style="margin-top:12px; padding:8px 18px; background:var(--bg-code); border-radius:8px; font-size:0.95rem; color:var(--text-secondary);">
+    <strong style="color:var(--brand-navy);">Why classic hooks have the rule</strong> &mdash; React tracks hooks <em>by call order</em>. A skipped <code class="inline-code">useState</code> would shift all later hooks &rarr; state corruption. <code class="inline-code">use</code> is special at the runtime level &mdash; safe to call conditionally.
+  </div>
+</section>
+
+<!-- ==================== SLIDE 39: USE HOOK — KEY TAKEAWAY ==================== -->
+<section class="slide" data-presenter="p2" style="align-items:center;">
+  <span class="badge p2">Data</span>
+  <div class="takeaway" style="text-align:center; font-size:1.9rem; max-width:90%;">
+    "<code style="font-family:var(--font-code);">use</code> is the Swiss Army knife &mdash;<br>read any async resource or context,<br>anywhere in your component."
+  </div>
+  <div style="margin-top:36px; display:grid; grid-template-columns:1fr 1fr; gap:28px; max-width:1100px; width:100%;">
+    <div class="card" style="border-left:5px solid var(--accent-green); padding:20px 26px;">
+      <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.16em; color:var(--accent-green); font-weight:700; margin-bottom:8px;">&#10024; Genuinely new</div>
+      <div style="font-size:1.5rem; font-weight:700; color:var(--brand-navy); font-family:var(--font-code); margin-bottom:8px;">use(promise)</div>
+      <div style="font-size:1.05rem; color:var(--text-secondary); line-height:1.55;">No equivalent in React 18. Read async data <strong>directly in render</strong> &mdash; integrates with Suspense, bridges Server &amp; Client Components.</div>
+    </div>
+    <div class="card" style="border-left:5px solid var(--accent-purple); padding:20px 26px;">
+      <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.16em; color:var(--accent-purple); font-weight:700; margin-bottom:8px;">&#8635; Replaces useContext</div>
+      <div style="font-size:1.5rem; font-weight:700; color:var(--brand-navy); font-family:var(--font-code); margin-bottom:8px;">use(context)</div>
+      <div style="font-size:1.05rem; color:var(--text-secondary); line-height:1.55;">Same job as <code class="inline-code">useContext</code>, but freed from Rules of Hooks &mdash; now works in <strong>conditionals, loops, after early returns</strong>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 40: HYDRATION ERROR DIFFS ==================== -->
+<section class="slide" data-presenter="p2">
+  <span class="badge p2">Data</span>
+  <h1 style="margin-bottom:6px;">Hydration Error Improvements</h1>
+  <p class="text-secondary" style="font-size:1.05rem; margin-bottom:14px;"><strong>Hydration</strong> = React "wakes up" server-rendered HTML in the browser. If server &amp; client output differ &mdash; you get a mismatch. React 19 finally tells you <em>where</em>.</p>
+  <div class="code-compare" style="margin-top:8px;">
     <div>
       <div class="code-label before">React 18</div>
       <div class="card" style="padding:24px; font-family:var(--font-code); font-size:1rem; line-height:1.8; color:var(--accent-red); border-left:3px solid var(--accent-orange);">
@@ -1455,54 +1572,52 @@ tr:last-child td { border-bottom: none; }
 <!-- ==================== SLIDE 44: IMPROVED ERROR REPORTING ==================== -->
 <section class="slide" data-presenter="p2">
   <span class="badge p2">Data</span>
-  <h2>Improved Error Reporting</h2>
-  <ul style="font-size:1.3rem; margin-top:16px;">
-    <li>Errors are no longer logged twice &mdash; duplicate console errors removed</li>
-    <li>Better stack traces in development</li>
+  <h2 style="margin-bottom:10px;">Improved Error Reporting</h2>
+  <ul style="font-size:1.1rem; line-height:1.7; margin:0 0 18px;">
+    <li>Errors no longer logged twice &mdash; <code class="inline-code">StrictMode</code> double-invocation noise removed</li>
+    <li>Better stack traces in development &mdash; component tree shown, not just <code class="inline-code">react-dom.js</code></li>
   </ul>
-  <h3 style="margin-top:32px;">New Error Handling Options on <code class="inline-code">createRoot</code></h3>
-  <div style="display:flex; flex-direction:column; gap:16px; margin-top:16px;">
-    <div class="card" style="padding:16px 24px;">
-      <code class="inline-code" style="font-size:1.1rem;">onCaughtError</code>
-      <span class="text-secondary" style="margin-left:16px;">Fired when React catches an error in an Error Boundary</span>
+
+  <div style="display:grid; grid-template-columns: 1.1fr 1fr; gap:20px;">
+    <div>
+      <h3 style="font-size:1.15rem; margin-bottom:8px;">Three hooks on <code class="inline-code">createRoot</code></h3>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div class="card" style="padding:10px 16px; border-left:4px solid var(--accent-orange);">
+          <code class="inline-code" style="font-size:1rem; color:var(--accent-orange);">onCaughtError</code>
+          <div class="text-secondary" style="font-size:0.95rem; margin-top:2px;">Error Boundary caught it &mdash; fallback shown. Log to Sentry.</div>
+        </div>
+        <div class="card" style="padding:10px 16px; border-left:4px solid var(--accent-red);">
+          <code class="inline-code" style="font-size:1rem; color:var(--accent-red);">onUncaughtError</code>
+          <div class="text-secondary" style="font-size:0.95rem; margin-top:2px;">Nothing caught it &mdash; app crashed. Critical alert.</div>
+        </div>
+        <div class="card" style="padding:10px 16px; border-left:4px solid var(--accent-green);">
+          <code class="inline-code" style="font-size:1rem; color:var(--accent-green);">onRecoverableError</code>
+          <div class="text-secondary" style="font-size:0.95rem; margin-top:2px;">React auto-recovered (e.g. hydration mismatch). Track health.</div>
+        </div>
+      </div>
     </div>
-    <div class="card" style="padding:16px 24px;">
-      <code class="inline-code" style="font-size:1.1rem;">onUncaughtError</code>
-      <span class="text-secondary" style="margin-left:16px;">Fired when an error is thrown and not caught by an Error Boundary</span>
-    </div>
-    <div class="card" style="padding:16px 24px;">
-      <code class="inline-code" style="font-size:1.1rem;">onRecoverableError</code>
-      <span class="text-secondary" style="margin-left:16px;">Fired when React recovers from an error automatically</span>
+    <div>
+      <h3 style="font-size:1.15rem; margin-bottom:8px;">Wire them at app root</h3>
+      <pre class="code-block" style="margin:0; padding:14px 18px; font-size:0.85rem; line-height:1.6;"><code><span class="kw">import</span> { <span class="fn">createRoot</span> } <span class="kw">from</span> <span class="str">"react-dom/client"</span>;
+
+<span class="kw">const</span> <span class="param">root</span> = <span class="fn">createRoot</span>(<span class="param">container</span>, {
+  <span class="attr">onCaughtError</span>: (<span class="param">err</span>, <span class="param">info</span>) =&gt; {
+    <span class="fn">sentry</span>.<span class="fn">capture</span>(<span class="param">err</span>);
+  },
+  <span class="attr">onUncaughtError</span>: (<span class="param">err</span>) =&gt; {
+    <span class="fn">alertOncall</span>(<span class="param">err</span>);
+  },
+  <span class="attr">onRecoverableError</span>: (<span class="param">err</span>) =&gt; {
+    <span class="fn">metrics</span>.<span class="fn">log</span>(<span class="str">"recovered"</span>);
+  },
+});
+
+<span class="param">root</span>.<span class="fn">render</span>(<span class="tag">&lt;App</span> <span class="tag">/&gt;</span>);</code></pre>
     </div>
   </div>
 </section>
 
-<!-- ==================== SLIDE 44: CODEMODS & UPGRADE TOOLING ==================== -->
-<section class="slide code-slide" data-presenter="shared">
-  <span class="badge shared">Migration</span>
-  <h2 style="margin-bottom:4px;">Codemods &amp; Upgrade Tooling</h2>
-  <p class="text-secondary mb-16" style="font-size:1.1rem;">Automated transforms to migrate your codebase &mdash; run on a clean git branch, review each change</p>
-  <pre class="code-block"><code><span class="cm"># Run the full React 19 migration recipe</span>
-<span class="fn">npx</span> <span class="param">codemod@latest</span> <span class="str">react/19/migration-recipe</span>
-
-<span class="cm"># Or run individual codemods:</span>
-<span class="fn">npx</span> <span class="param">codemod@latest</span> <span class="str">react/19/replace-reactdom-render</span>
-<span class="fn">npx</span> <span class="param">codemod@latest</span> <span class="str">react/19/replace-string-ref</span>
-<span class="fn">npx</span> <span class="param">codemod@latest</span> <span class="str">react/19/replace-act-import</span></code></pre>
-  <div style="margin-top:20px; display:flex; gap:16px; font-size:1.05rem; flex-wrap:wrap;">
-    <div class="card" style="flex:1; min-width:200px; padding:12px 16px;">
-      <span class="text-react">replace-reactdom-render</span> <span class="text-secondary">&mdash; migrates <code class="inline-code">ReactDOM.render</code> to <code class="inline-code">createRoot</code></span>
-    </div>
-    <div class="card" style="flex:1; min-width:200px; padding:12px 16px;">
-      <span class="text-react">replace-string-ref</span> <span class="text-secondary">&mdash; converts legacy string refs to callback refs</span>
-    </div>
-    <div class="card" style="flex:1; min-width:200px; padding:12px 16px;">
-      <span class="text-react">replace-act-import</span> <span class="text-secondary">&mdash; updates test <code class="inline-code">act</code> imports from <code class="inline-code">react-dom</code> to <code class="inline-code">react</code></span>
-    </div>
-  </div>
-</section>
-
-<!-- ==================== SLIDE 45: DIVIDER — MIGRATION ==================== -->
+<!-- ==================== SLIDE 42: DIVIDER — MIGRATION ==================== -->
 <section class="slide divider-slide" data-presenter="shared">
   <div style="font-size:1rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--accent-green); margin-bottom:16px;">Shared Closing</div>
   <div class="section-title">Migration &amp; Tooling</div>
@@ -1510,49 +1625,67 @@ tr:last-child td { border-bottom: none; }
   <div class="section-subtitle">How to adopt React 19 in your codebase</div>
 </section>
 
-<!-- ==================== SLIDE 45: MIGRATION STRATEGY ==================== -->
+<!-- ==================== SLIDE 43: MIGRATION PATH ==================== -->
 <section class="slide" data-presenter="shared" style="padding:5vh 60px 14vh;">
   <span class="badge shared">Migration</span>
-  <h2 style="margin-bottom:12px;">Migration Strategy</h2>
-  <div style="display:flex; gap:20px; flex-wrap:wrap;">
-    <div class="card" style="flex:1; min-width:280px; border-left:3px solid var(--accent-green); padding:14px 20px;">
-      <h3 style="color:var(--accent-green); margin-bottom:8px; font-size:1.1rem;">🚀 How to Start</h3>
-      <ul style="font-size:0.95rem; margin:0;">
-        <li>Upgrade: <code class="inline-code">npm install react@19 react-dom@19</code></li>
-        <li>Run codemods for <code class="inline-code">forwardRef</code> and <code class="inline-code">Context.Provider</code></li>
-        <li>Enable Compiler on one non-critical page first</li>
-        <li>Check framework support for Server Components</li>
+  <h2 style="margin-bottom:6px;">Migration Path</h2>
+  <p class="text-secondary" style="font-size:1.05rem; margin-bottom:18px;">A step-by-step playbook to bring React 19 into your codebase &mdash; <em>do not skip step 1</em></p>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px;">
+    <div class="card" style="border-left:4px solid var(--accent-orange); padding:14px 20px;">
+      <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.14em; color:var(--accent-orange); font-weight:700; margin-bottom:6px;">Step 1 &mdash; prep on React 18</div>
+      <h3 style="font-size:1.1rem; margin-bottom:8px;">Upgrade to latest 18.x &amp; fix warnings</h3>
+      <pre class="code-block" style="margin:0 0 8px; padding:8px 12px; font-size:0.8rem; line-height:1.5;"><code><span class="fn">npm</span> <span class="param">install</span> <span class="str">react@^18.3</span> <span class="str">react-dom@^18.3</span></code></pre>
+      <ul style="font-size:0.92rem; margin:0; padding-left:18px; line-height:1.6;">
+        <li>18.3 surfaces deprecation warnings for everything React 19 will reject</li>
+        <li>Fix every warning <strong>before</strong> bumping to 19 &mdash; much easier to debug</li>
       </ul>
     </div>
-    <div class="card" style="flex:1; min-width:280px; border-left:3px solid var(--accent-react); padding:14px 20px;">
-      <h3 style="color:var(--accent-react); margin-bottom:8px; font-size:1.1rem;">📋 How to Proceed</h3>
-      <ul style="font-size:0.95rem; margin:0;">
-        <li>Adopt features one at a time, not all at once</li>
-        <li>Low-risk wins first: metadata, ref cleanup, Context</li>
-        <li>Then Actions / <code class="inline-code">useActionState</code> for forms</li>
-        <li>Server Components for data-heavy pages</li>
+
+    <div class="card" style="border-left:4px solid var(--accent-purple); padding:14px 20px;">
+      <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.14em; color:var(--accent-purple); font-weight:700; margin-bottom:6px;">Step 2 &mdash; codemod &amp; bump</div>
+      <h3 style="font-size:1.1rem; margin-bottom:8px;">Auto-migrate, then install React 19</h3>
+      <pre class="code-block" style="margin:0 0 8px; padding:8px 12px; font-size:0.78rem; line-height:1.5;"><code><span class="fn">npx</span> <span class="param">codemod@latest</span> <span class="str">react/19/migration-recipe</span>
+<span class="fn">npm</span> <span class="param">install</span> <span class="str">react@19</span> <span class="str">react-dom@19</span></code></pre>
+      <ul style="font-size:0.92rem; margin:0; padding-left:18px; line-height:1.6;">
+        <li>Recipe covers <code class="inline-code">ReactDOM.render</code>, string refs, <code class="inline-code">act</code> import path</li>
+        <li>Run on a clean git branch &mdash; review each diff</li>
       </ul>
     </div>
-    <div class="card" style="flex:1; min-width:280px; border-left:3px solid var(--accent-orange); padding:14px 20px;">
-      <h3 style="color:var(--accent-orange); margin-bottom:8px; font-size:1.1rem;">⚠️ Risks &amp; Gotchas</h3>
-      <ul style="font-size:0.95rem; margin:0;">
-        <li>Compiler requires Rules of React &mdash; run health checks</li>
-        <li>Server Components need framework + bundler support</li>
-        <li><code class="inline-code">&lt;Activity&gt;</code> is experimental &mdash; API may change</li>
-        <li>Some third-party libraries may lag behind</li>
+
+    <div class="card" style="border-left:4px solid var(--accent-green); padding:14px 20px;">
+      <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.14em; color:var(--accent-green); font-weight:700; margin-bottom:6px;">Step 3 &mdash; adopt features</div>
+      <h3 style="font-size:1.1rem; margin-bottom:8px;">Incrementally, low-risk first</h3>
+      <ul style="font-size:0.92rem; margin:0; padding-left:18px; line-height:1.6;">
+        <li>Easy wins: <code class="inline-code">ref</code> as prop, ref cleanup, Context as provider, metadata</li>
+        <li>Forms: Actions + <code class="inline-code">useActionState</code></li>
+        <li>Compiler: enable on one non-critical page first</li>
+        <li>Server Components: only if framework supports RSC</li>
       </ul>
     </div>
   </div>
-  <div style="margin-top:14px; padding:12px 20px; background:rgba(126,199,153,0.1); border:1px solid rgba(126,199,153,0.3); border-radius:10px;">
-    <div style="font-size:1rem; font-weight:600; color:var(--accent-green); margin-bottom:6px;">🛠 Resources</div>
-    <ul style="font-size:0.95rem; margin:0; padding-left:1.2em;">
-      <li><strong>Codemods</strong> &mdash; automated transforms for forwardRef, Context.Provider, and more</li>
-      <li><strong>Compiler health checks</strong> &mdash; validate Compiler compatibility</li>
-      <li><a href="https://react.dev/blog/2024/04/25/react-19-upgrade-guide" target="_blank" style="color:var(--accent-react); text-decoration:underline;">Official Upgrade Guide</a></li>
-    </ul>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:14px;">
+    <div class="card" style="border-left:4px solid var(--accent-red); padding:10px 18px;">
+      <strong style="color:var(--accent-red); font-size:0.95rem;">&#9888; Watch out</strong>
+      <ul style="font-size:0.9rem; margin:4px 0 0; padding-left:18px; line-height:1.55;">
+        <li>Compiler enforces <strong>Rules of React</strong> &mdash; run <code class="inline-code">react-compiler-healthcheck</code> first</li>
+        <li><code class="inline-code">&lt;Activity&gt;</code> is still experimental &mdash; API may change</li>
+        <li>Third-party libraries may lag &mdash; check their React 19 compatibility</li>
+      </ul>
+    </div>
+    <div class="card" style="border-left:4px solid var(--brand-navy); padding:10px 18px;">
+      <strong style="color:var(--brand-navy); font-size:0.95rem;">&#128218; Resources</strong>
+      <ul style="font-size:0.9rem; margin:4px 0 0; padding-left:18px; line-height:1.55;">
+        <li><a href="https://react.dev/blog/2024/04/25/react-19-upgrade-guide" target="_blank" style="color:var(--accent-react); text-decoration:underline;">Official React 19 Upgrade Guide</a></li>
+        <li>Codemod registry &mdash; <code class="inline-code">codemod@latest</code></li>
+        <li>Compiler health-checks for Rules of React validation</li>
+      </ul>
+    </div>
   </div>
-  <div class="takeaway" style="margin-top:12px; font-size:1.15rem; max-width:100%;">
-    React 19 is production-ready. Start with one feature this week.
+
+  <div class="takeaway" style="margin-top:14px; font-size:1.1rem;">
+    React 19 is production-ready. <strong>Step 1 today:</strong> bump to React 18.3, then fix every warning.
   </div>
 </section>
 
@@ -1581,9 +1714,9 @@ tr:last-child td { border-bottom: none; }
         <tr class="p2-row"><td style="padding:4px 12px;">9</td><td style="padding:4px 12px;">useActionState</td><td style="padding:4px 12px;">"Form state without useState."</td></tr>
         <tr class="p2-row"><td style="padding:4px 12px;">10</td><td style="padding:4px 12px;">useFormStatus</td><td style="padding:4px 12px;">"Pending state, no prop drilling."</td></tr>
         <tr class="p2-row"><td style="padding:4px 12px;">11</td><td style="padding:4px 12px;">useOptimistic</td><td style="padding:4px 12px;">"Instant feedback for better UX."</td></tr>
-        <tr class="p2-row"><td style="padding:4px 12px;">12</td><td style="padding:4px 12px;">use hook</td><td style="padding:4px 12px;">"Read promises directly in render."</td></tr>
-        <tr class="p2-row"><td style="padding:4px 12px;">13</td><td style="padding:4px 12px;">Server Components</td><td style="padding:4px 12px;">"Ship less JS to the client."</td></tr>
-        <tr class="p2-row"><td style="padding:4px 12px;">14</td><td style="padding:4px 12px;">Server Actions</td><td style="padding:4px 12px;">"Full-stack React, no API routes."</td></tr>
+        <tr class="p2-row"><td style="padding:4px 12px;">12</td><td style="padding:4px 12px;">Server Components</td><td style="padding:4px 12px;">"Ship less JS to the client."</td></tr>
+        <tr class="p2-row"><td style="padding:4px 12px;">13</td><td style="padding:4px 12px;">Server Actions</td><td style="padding:4px 12px;">"Full-stack React, no API routes."</td></tr>
+        <tr class="p2-row"><td style="padding:4px 12px;">14</td><td style="padding:4px 12px;">use hook</td><td style="padding:4px 12px;">"Bridge async data from server to client."</td></tr>
         <tr class="p2-row"><td style="padding:4px 12px;">15</td><td style="padding:4px 12px;">Hydration improvements</td><td style="padding:4px 12px;">"Readable SSR error diffs."</td></tr>
       </tbody>
     </table>
