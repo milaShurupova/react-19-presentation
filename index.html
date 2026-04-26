@@ -498,47 +498,6 @@ tr:last-child td { border-bottom: none; }
   </div>
 </section>
 
-<!-- ==================== SLIDE 8: COMPILER — PRACTICAL GUIDANCE ==================== -->
-<section class="slide" data-presenter="p1">
-  <span class="badge p1">Compiler</span>
-  <h2>React Compiler &mdash; What Changes in Your Code?</h2>
-  <div class="two-col" style="margin-top:24px; gap:32px;">
-    <div class="card" style="border-left:3px solid var(--accent-green); padding:20px 24px;">
-      <h3 style="color:var(--accent-green); margin-bottom:16px;">&#10003; Safe to Remove</h3>
-      <ul style="list-style:none; padding:0;">
-        <li style="margin-bottom:14px;">
-          <code class="inline-code">React.memo()</code>
-          <div class="text-secondary" style="font-size:0.95rem; margin-top:4px;">Compiler optimizes re-renders automatically</div>
-        </li>
-        <li style="margin-bottom:14px;">
-          <code class="inline-code">useMemo()</code> <span class="text-secondary">for derived values</span>
-          <div class="text-secondary" style="font-size:0.95rem; margin-top:4px;">Compiler tracks dependencies for you</div>
-        </li>
-        <li>
-          <code class="inline-code">useCallback()</code>
-          <div class="text-secondary" style="font-size:0.95rem; margin-top:4px;">Compiler stabilizes function references</div>
-        </li>
-      </ul>
-    </div>
-    <div class="card" style="border-left:3px solid var(--accent-orange); padding:20px 24px;">
-      <h3 style="color:var(--accent-orange); margin-bottom:16px;">&#9888; Keep When</h3>
-      <ul style="list-style:none; padding:0;">
-        <li style="margin-bottom:14px;">
-          <code class="inline-code">useMemo()</code> <span class="text-secondary">guards expensive computation</span>
-          <div class="text-secondary" style="font-size:0.95rem; margin-top:4px;">Encodes business logic, not just rendering perf</div>
-        </li>
-        <li>
-          <span>Code the compiler can't analyze</span>
-          <div class="text-secondary" style="font-size:0.95rem; margin-top:4px;">Dynamic patterns, eval, non-standard meta-programming</div>
-        </li>
-      </ul>
-    </div>
-  </div>
-  <div class="takeaway" style="margin-top:28px; font-size:1.15rem; max-width:100%;">
-    Enable in all new projects. Adopt incrementally in existing ones &mdash; start with non-critical pages.
-  </div>
-</section>
-
 
 <!-- ==================== SLIDE 9: COMPILER — INSTALLATION ==================== -->
 <section class="slide code-slide" data-presenter="p1">
